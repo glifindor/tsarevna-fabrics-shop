@@ -1,0 +1,83 @@
+/* Специальные стили для админ-панели Царевна Швеяна */
+
+/* Переопределяем цвета кнопок */
+.btn-primary {
+  background-color: #EC4899;
+  color: white;
+}
+.btn-primary:hover {
+  background-color: #DB2777;
+}
+
+/* Стили для заголовков */
+.admin-title {
+  font-family: 'Times New Roman', Times, serif;
+  color: #374151;
+  font-weight: 600;
+  position: relative;
+}
+
+.admin-title::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background-color: #EC4899; /* pink-500 */
+}
+
+/* Стили для боковой панели */
+.admin-sidebar {
+  background: linear-gradient(to bottom, #1F2937, #111827);
+}
+
+/* Корона в логотипе */
+.crown-icon {
+  position: absolute;
+  top: -10px;
+  right: -5px;
+  color: #F59E0B; /* amber-500 */
+  font-size: 24px;
+  transform: rotate(30deg);
+}
+
+/* Стили для активных вкладок */
+.tab-active {
+  background-color: #EC4899;
+  color: white;
+}
+
+/* Специальный стиль для кнопок действий */
+.action-btn {
+  transition: color 0.2s;
+}
+
+.action-btn-edit {
+  color: #DB2777;
+}
+.action-btn-edit:hover {
+  color: #9D174D;
+}
+
+.action-btn-delete {
+  color: #DC2626;
+}
+.action-btn-delete:hover {
+  color: #991B1B;
+}
+
+/* Стили для короны в логотипе */
+.logo-container {
+  position: relative;
+  display: inline-block;
+}
+
+.crown-top {
+  position: absolute;
+  top: -15px;
+  right: -10px;
+  font-size: 24px;
+  color: #F59E0B;
+  transform: rotate(15deg);
+}
