@@ -3,13 +3,14 @@
 import React, { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { FiFilter, FiX, FiSearch, FiShoppingCart } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
 import apiClient from '@/lib/apiClient';
 import { useCart } from '@/context/CartContext';
 import Notification from '@/components/ui/Notification';
+import SafeImage from '@/components/ui/SafeImage';
+import { getFirstImage } from '@/lib/imageUtils';
 
 // Интерфейс для продукта
 interface Product {
@@ -461,12 +462,13 @@ const CatalogContent: React.FC = () => {
                   <Link href={`/product/${product._id}`}>
                     <div className="h-64 bg-gray-200 relative">
                       {product.images && product.images.length > 0 ? (
-                        <Image 
-                          src={product.images[0]} 
+                        <SafeImage 
+                          src={getFirstImage(product.images, '/vercel.svg')} 
                           alt={product.name}
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           className="object-cover"
+                          fallback="/vercel.svg"
                         />
                       ) : (
                         <div className="flex items-center justify-center h-full text-gray-400">
