@@ -57,21 +57,79 @@ export default function Home() {
       try {
         // Получаем топ-товары по статистике
         const statsRes = await fetch('/api/orders?stats=1');
+        
+        if (!statsRes.ok) {
+          // Если нет статистики, просто загружаем первые товары
+          const fallbackRes = await fetch('/api/products?limit=4');
+          if (fallbackRes.ok) {
+            const fallbackData = await fallbackRes.json();
+            if (fallbackData.success && fallbackData.data) {
+              setFeaturedProducts(fallbackData.data);
+            }
+          }
+          return;
+        }
+        
         const statsData = await statsRes.json();
-        if (statsData.success && statsData.data && statsData.data.topProducts) {
-          // Для каждого товара получаем подробную инфу
+        if (statsData.success && statsData.data && statsData.data.topProducts && Array.isArray(statsData.data.topProducts)) {
+          // Для каждого товара получаем подробную инфу, только если у него есть productId
+          const validProducts = statsData.data.topProducts.filter((tp: any) => 
+            tp && tp.productId && typeof tp.productId === 'string' && tp.productId.trim()
+          );
+          
+          if (validProducts.length === 0) {
+            setProdError('Нет данных о популярных товарах');
+            return;
+          }
+          
           const prods = await Promise.all(
-            statsData.data.topProducts.map(async (tp: { productId: string }) => {
-              const prodRes = await fetch(`/api/products/${tp.productId}`);
-              const prodData = await prodRes.json();
-              return prodData.success && prodData.data ? prodData.data : null;
+            validProducts.slice(0, 4).map(async (tp: { productId: string }) => {
+              try {
+                const prodRes = await fetch(`/api/products/${tp.productId.trim()}`);
+                if (!prodRes.ok) return null;
+                
+                const prodData = await prodRes.json();
+                return prodData.success && prodData.data ? prodData.data : null;
+              } catch (error) {
+                console.error('Ошибка загрузки товара:', tp.productId, error);
+                return null;
+              }
             })
           );
-          setFeaturedProducts(prods.filter(Boolean));
+          
+          const validProds = prods.filter(Boolean);
+          if (validProds.length > 0) {
+            setFeaturedProducts(validProds);
+          } else {
+            // Если не удалось загрузить ни одного товара, загружаем просто первые товары
+            const fallbackRes = await fetch('/api/products?limit=4');
+            if (fallbackRes.ok) {
+              const fallbackData = await fallbackRes.json();
+              if (fallbackData.success && fallbackData.data) {
+                setFeaturedProducts(fallbackData.data);
+              } else {
+                setProdError('Не удалось загрузить товары');
+              }
+            } else {
+              setProdError('Не удалось загрузить товары');
+            }
+          }
         } else {
-          setProdError('Не удалось получить популярные товары');
+          // Если нет статистики, загружаем просто первые товары
+          const fallbackRes = await fetch('/api/products?limit=4');
+          if (fallbackRes.ok) {
+            const fallbackData = await fallbackRes.json();
+            if (fallbackData.success && fallbackData.data) {
+              setFeaturedProducts(fallbackData.data);
+            } else {
+              setProdError('Не удалось загрузить товары');
+            }
+          } else {
+            setProdError('Не удалось загрузить товары');
+          }
         }
-      } catch {
+      } catch (error) {
+        console.error('Ошибка при загрузке популярных товаров:', error);
         setProdError('Ошибка при загрузке популярных товаров');
       } finally {
         setProdLoading(false);
