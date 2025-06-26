@@ -728,43 +728,78 @@ function ProductsPanel() {
 
                 {/* Загрузка изображений */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Изображения товара
                   </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageUpload}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                  {uploadingImage && (
-                    <p className="text-sm text-blue-600 mt-1">Загрузка изображений...</p>
-                  )}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      multiple
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="product-image-upload"
+                      disabled={uploadingImage}
+                    />
+                    <label htmlFor="product-image-upload" className="cursor-pointer">
+                      {uploadingImage ? (
+                        <div className="text-blue-600">
+                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                          <p>Загрузка изображений...</p>
+                        </div>
+                      ) : (
+                        <div className="text-gray-500">
+                          <svg className="mx-auto h-12 w-12 mb-2" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          <p className="font-medium">Выберите изображения товара</p>
+                          <p className="text-sm">или перетащите файлы сюда</p>
+                          <p className="text-xs mt-1">PNG, JPG, GIF, WebP до 5MB</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
                   
                   {/* Предпросмотр загруженных изображений */}
                   {formState.images && formState.images.length > 0 && (
-                    <div className="mt-2 grid grid-cols-3 gap-2">
-                      {formState.images.map((imageUrl, index) => (
-                        <div key={index} className="relative">
-                          <div className="w-full h-20 relative">
-                            <Image 
-                              src={imageUrl} 
-                              alt={`Изображение ${index + 1}`}
-                              fill
-                              className="object-cover rounded border"
-                              sizes="(max-width: 768px) 33vw, 20vw"
-                            />
+                    <div className="mt-4">
+                      <p className="text-sm font-medium text-gray-700 mb-2">
+                        Загружено изображений: {formState.images.length}
+                      </p>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {formState.images.map((imageUrl, index) => (
+                          <div key={index} className="relative group">
+                            <div className="w-full h-24 relative border rounded-lg overflow-hidden">
+                              <Image 
+                                src={imageUrl} 
+                                alt={`Изображение ${index + 1}`}
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 768px) 50vw, 25vw"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const parent = target.parentElement;
+                                  if (parent) {
+                                    parent.innerHTML = '<div class="w-full h-full bg-red-100 text-red-500 flex items-center justify-center text-xs">Ошибка загрузки</div>';
+                                  }
+                                }}
+                              />
+                              <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <button
+                                  type="button"
+                                  onClick={() => removeImage(index)}
+                                  className="bg-red-500 hover:bg-red-600 text-white text-sm px-2 py-1 rounded"
+                                  title="Удалить изображение"
+                                >
+                                  Удалить
+                                </button>
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1 text-center">#{index + 1}</p>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            className="absolute top-0 right-0 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1992,36 +2027,11 @@ function CategoriesPanel() {
                 <input type="text" name="slug" value={formState.slug} onChange={handleInputChange} className="form-input w-full" required />
               </div>
               <div>
-                <label className="block text-sm mb-1">Ссылка на фото</label>
-                <div
-                  className={`border-2 border-dashed rounded p-3 text-center cursor-pointer ${uploadingImage ? 'bg-gray-100' : 'hover:bg-pink-50'}`}
-                  onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
-                  onDrop={async (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
-                    setUploadingImage(true);
-                    const file = e.dataTransfer.files[0];
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    try {
-                      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-                      const data = await res.json();
-                      if (data.success && data.url) {
-                        setFormState(fs => ({ ...fs, image: data.url }));
-                      } else {
-                        alert(data.message || 'Ошибка загрузки');
-                      }
-                    } catch {
-                      alert('Ошибка загрузки');
-                    } finally {
-                      setUploadingImage(false);
-                    }
-                  }}
-                >
+                <label className="block text-sm font-medium text-gray-700 mb-2">Изображение категории</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
                     style={{ display: 'none' }}
                     id="category-image-upload"
                     onChange={async (e) => {
@@ -2036,36 +2046,72 @@ function CategoriesPanel() {
                         if (data.success && data.url) {
                           setFormState(fs => ({ ...fs, image: data.url }));
                         } else {
-                          alert(data.message || 'Ошибка загрузки');
+                          alert(data.message || 'Ошибка загрузки: ' + (data.message || 'Неизвестная ошибка'));
                         }
-                      } catch {
-                        alert('Ошибка загрузки');
+                      } catch (error) {
+                        console.error('Ошибка загрузки:', error);
+                        alert('Ошибка загрузки изображения');
                       } finally {
                         setUploadingImage(false);
                       }
                     }}
                     disabled={uploadingImage}
                   />
-                  <label htmlFor="category-image-upload" className="block cursor-pointer">
+                  <label htmlFor="category-image-upload" className="cursor-pointer">
                     {uploadingImage ? (
-                      <span className="text-pink-500">Загрузка...</span>
+                      <div className="text-pink-600">
+                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pink-600 mx-auto mb-2"></div>
+                        <p>Загрузка изображения...</p>
+                      </div>
                     ) : formState.image ? (
-                      <div className="w-24 h-24 relative mx-auto mb-2">
-                        <Image src={formState.image} alt="Превью" fill className="object-cover rounded" sizes="96px" />
+                      <div className="w-32 h-32 relative mx-auto mb-2 border rounded-lg overflow-hidden">
+                        <Image 
+                          src={formState.image} 
+                          alt="Превью категории" 
+                          fill 
+                          className="object-cover" 
+                          sizes="128px"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent) {
+                              parent.innerHTML = '<div class="w-full h-full bg-red-100 text-red-500 flex items-center justify-center text-xs">Ошибка загрузки</div>';
+                            }
+                          }}
+                        />
                       </div>
                     ) : (
-                      <span className="text-gray-400">Перетащите файл или кликните для выбора</span>
+                      <div className="text-gray-500">
+                        <svg className="mx-auto h-12 w-12 mb-2" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <p className="font-medium">Выберите изображение категории</p>
+                        <p className="text-sm">или перетащите файл сюда</p>
+                        <p className="text-xs mt-1">PNG, JPG, GIF, WebP до 5MB</p>
+                      </div>
                     )}
                   </label>
                   {formState.image && !uploadingImage && (
                     <button
                       type="button"
-                      className="mt-2 text-xs text-red-500 underline hover:text-red-700"
+                      className="mt-2 bg-red-100 hover:bg-red-200 text-red-600 text-sm px-3 py-1 rounded"
                       onClick={() => setFormState(fs => ({ ...fs, image: '' }))}
-                    >Удалить фото</button>
+                    >
+                      Удалить изображение
+                    </button>
                   )}
                 </div>
-                <input type="text" name="image" value={formState.image} onChange={handleInputChange} className="form-input w-full mt-2" placeholder="URL изображения (опционально)" />
+                <div className="mt-2">
+                  <input 
+                    type="text" 
+                    name="image" 
+                    value={formState.image} 
+                    onChange={handleInputChange} 
+                    className="form-input w-full text-sm" 
+                    placeholder="или введите URL изображения" 
+                  />
+                </div>
               </div>
               {formError && <div className="text-red-500 text-sm">{formError}</div>}
               <div className="flex justify-end">

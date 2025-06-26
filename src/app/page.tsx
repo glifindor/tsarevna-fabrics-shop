@@ -200,7 +200,9 @@ export default function Home() {
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = '/vercel.svg'; // или любой другой placeholder
+                        if (target.src !== '/vercel.svg') {
+                          target.src = '/vercel.svg';
+                        }
                       }}
                     />
                   ) : (
@@ -242,7 +244,9 @@ export default function Home() {
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.src = '/vercel.svg';
+                          if (target.src !== '/vercel.svg') {
+                            target.src = '/vercel.svg';
+                          }
                         }}
                       />
                     ) : (

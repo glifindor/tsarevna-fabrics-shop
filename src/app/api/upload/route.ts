@@ -9,12 +9,12 @@ export async function POST(request: NextRequest) {
   try {
     console.log('POST запрос к /api/upload получен');
     
-    // Проверка авторизации (опционально - можно закомментировать, если хотим позволить загрузку без авторизации)
+    // Проверка авторизации - только админы могут загружать файлы
     const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    if (!session || !session.user || session.user.role !== 'admin') {
       return NextResponse.json(
-        { success: false, message: 'Требуется авторизация' },
-        { status: 401 }
+        { success: false, message: 'Требуются права администратора' },
+        { status: 403 }
       );
     }
     
