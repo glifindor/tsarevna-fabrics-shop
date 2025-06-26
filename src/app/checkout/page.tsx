@@ -66,6 +66,10 @@ export default function Checkout() {
   const [orderNumber, setOrderNumber] = useState("");
   const [orderError, setOrderError] = useState("");
   const [step, setStep] = useState<'form' | 'confirmation'>('form');
+  
+  // Состояния для сохранения данных о заказе ДО очистки корзины
+  const [orderTotalAmount, setOrderTotalAmount] = useState(0);
+  const [orderItemsCount, setOrderItemsCount] = useState(0);
 
   // Перенаправляем на страницу корзины, если в ней нет товаров
   useEffect(() => {
@@ -167,6 +171,10 @@ export default function Checkout() {
         console.log('ℹ️ Telegram уведомления не настроены');
       }
       
+      // Сохраняем данные заказа ДО очистки корзины
+      setOrderTotalAmount(totalAmount);
+      setOrderItemsCount(cart.items.length);
+      
       // Очищаем корзину после успешной отправки заказа
       console.log('🧹 Очищаем корзину...');
       await clearCart();
@@ -203,12 +211,22 @@ export default function Checkout() {
           </div>
           <h1 className="text-3xl font-bold mb-4 text-brand-primary">Заказ успешно оформлен!</h1>
           <p className="text-gray-600 mb-8">
-            Ваш заказ №{orderNumber} принят в обработку. Информация о заказе отправлена на указанный email.
+            Ваш заказ №{orderNumber} принят в обработку. Информация о заказе в личном кабинете.
           </p>
           <div className="mb-8 p-6 bg-pink-50/50 rounded-xl border border-pink-100">
             <h2 className="font-bold mb-4 text-brand-primary">Детали заказа:</h2>
-            <p className="text-gray-700 mb-2">Сумма заказа: {totalAmount.toLocaleString()} ₽</p>
-            <p className="text-gray-700">Количество товаров: {cart.items.length}</p>
+            <p className="text-gray-700 mb-2">Сумма заказа: {orderTotalAmount.toLocaleString()} ₽</p>
+            <p className="text-gray-700 mb-2">Количество товаров: {orderItemsCount}</p>
+            {session?.user && (
+              <div className="mt-4">
+                <Link 
+                  href="/profile/orders" 
+                  className="inline-flex items-center text-pink-600 hover:text-pink-700 font-medium text-sm"
+                >
+                  📋 Перейти в личный кабинет
+                </Link>
+              </div>
+            )}
           </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
