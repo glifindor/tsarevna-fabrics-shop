@@ -16,7 +16,7 @@ export function getImageUrl(imageUrl?: string | null, fallback: string = '/logo.
   }
 
   // Очищаем путь от лишних слешей и добавляем /uploads/ если нужно
-  const cleanPath = imageUrl.replace(/^\/+/, '').replace(/^uploads\//, '');
+  const cleanPath = imageUrl.trim().replace(/^\/+/, '').replace(/^uploads\//, '');
   
   // Возвращаем правильный путь
   return `/uploads/${cleanPath}`;

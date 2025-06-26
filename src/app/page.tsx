@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaCrown, FaRulerHorizontal, FaShippingFast, FaCreditCard, FaMagic } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
+import { getImageUrl, getFirstImage } from '@/lib/imageUtils';
 
 interface Category {
   _id: string;
@@ -134,7 +135,7 @@ export default function Home() {
                 <div className="bg-gray-100 rounded-lg overflow-hidden aspect-square relative hover-scale shadow-sm">
                   {category.image ? (
                     <Image
-                                              src={category.image && category.image.startsWith('http') ? category.image : `/uploads/${category.image ? category.image.replace(/^\/+/, '').replace(/^uploads\//, '') : 'placeholder.jpg'}`}
+                      src={getImageUrl(category.image, '/vercel.svg')}
                       alt={category.name}
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-110"
@@ -176,7 +177,7 @@ export default function Home() {
                   <div className="h-64 bg-gray-200 relative">
                     {product.images && product.images.length > 0 ? (
                       <Image
-                                                  src={product.images[0] && product.images[0].startsWith('http') ? product.images[0] : `/uploads/${product.images[0] ? product.images[0].replace(/^\/+/, '').replace(/^uploads\//, '') : 'placeholder.jpg'}`}
+                        src={getFirstImage(product.images, '/vercel.svg')}
                         alt={product.name}
                         fill
                         className="object-cover"
