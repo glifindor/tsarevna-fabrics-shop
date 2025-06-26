@@ -65,6 +65,16 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  // Настройка для статических файлов
+  trailingSlash: false,
+  
+  // Отключение оптимизации изображений для uploads (временно)
+  experimental: {
+    serverActions: {
+      allowedOrigins: ["localhost:3000", "212.69.87.22:3000"]
+    }
+  }
 };
 
 export default nextConfig;
