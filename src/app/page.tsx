@@ -1,10 +1,9 @@
 'use client';
-import Image from "next/image";
 import Link from "next/link";
 import { FaCrown, FaRulerHorizontal, FaShippingFast, FaCreditCard, FaMagic } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { getImageUrl, getFirstImage } from '@/lib/imageUtils';
-import SafeImage from '@/components/ui/SafeImage';
+import SimpleImage from '@/components/ui/SimpleImage';
 
 interface Category {
   _id: string;
@@ -193,12 +192,10 @@ export default function Home() {
               >
                 <div className="bg-gray-100 rounded-lg overflow-hidden aspect-square relative hover-scale shadow-sm">
                   {category.image ? (
-                    <SafeImage
+                    <SimpleImage
                       src={getImageUrl(category.image, '/vercel.svg')}
                       alt={category.name}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-110"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                       fallback="/vercel.svg"
                     />
                   ) : (
@@ -232,12 +229,10 @@ export default function Home() {
                 <Link href={`/product/${product._id}`}>
                   <div className="h-64 bg-gray-200 relative">
                     {product.images && product.images.length > 0 ? (
-                      <SafeImage
+                      <SimpleImage
                         src={getFirstImage(product.images, '/vercel.svg')}
                         alt={product.name}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className="w-full h-full object-cover"
                         fallback="/vercel.svg"
                       />
                     ) : (

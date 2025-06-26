@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
+    // Отключаем оптимизацию изображений для простоты
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'http',
@@ -14,27 +16,9 @@ const nextConfig: NextConfig = {
         hostname: '212.69.87.22',
         pathname: '/**',
       },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'unsplash.com',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'via.placeholder.com',
-        pathname: '/**',
-      },
     ],
-    // Разрешаем все локальные пути для изображений
-    unoptimized: false,
-    // Отключаем оптимизацию для проблемных изображений
+    // Простая настройка без сложной оптимизации
     minimumCacheTTL: 60,
-    formats: ['image/webp', 'image/avif'],
   },
   
   // Настройка статических файлов

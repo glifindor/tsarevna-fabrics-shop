@@ -9,7 +9,7 @@ import { FaCrown } from 'react-icons/fa';
 import apiClient from '@/lib/apiClient';
 import { useCart } from '@/context/CartContext';
 import Notification from '@/components/ui/Notification';
-import SafeImage from '@/components/ui/SafeImage';
+import SimpleImage from '@/components/ui/SimpleImage';
 import { getFirstImage } from '@/lib/imageUtils';
 
 // Интерфейс для продукта
@@ -462,12 +462,10 @@ const CatalogContent: React.FC = () => {
                   <Link href={`/product/${product._id}`}>
                     <div className="h-64 bg-gray-200 relative">
                       {product.images && product.images.length > 0 ? (
-                        <SafeImage 
+                        <SimpleImage 
                           src={getFirstImage(product.images, '/vercel.svg')} 
                           alt={product.name}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          className="object-cover"
+                          className="w-full h-full object-cover"
                           fallback="/vercel.svg"
                         />
                       ) : (

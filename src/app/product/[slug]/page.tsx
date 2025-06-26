@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { FiMinus, FiPlus, FiShoppingCart } from 'react-icons/fi';
@@ -11,7 +10,7 @@ import apiClient from '@/lib/apiClient';
 import Notification from '@/components/ui/Notification';
 import { useSession } from 'next-auth/react';
 import ProductEditForm from '@/components/ProductEditForm';
-import SafeImage from '@/components/ui/SafeImage';
+import SimpleImage from '@/components/ui/SimpleImage';
 import { getFirstImage, getImageUrl } from '@/lib/imageUtils';
 
 // Получение похожих товаров из той же категории
@@ -293,12 +292,10 @@ export default function ProductPage() {
         <div className="md:w-1/2 px-4 mb-8 md:mb-0">
           <div className="mb-4 bg-gray-100 rounded-lg overflow-hidden relative aspect-square">
             {product.images && product.images.length > 0 ? (
-              <SafeImage 
+              <SimpleImage 
                 src={getImageUrl(product.images[selectedImage], '/vercel.svg')} 
                 alt={product.name}
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover"
+                className="w-full h-full object-cover"
                 fallback="/vercel.svg"
               />
             ) : (
@@ -325,12 +322,10 @@ export default function ProductPage() {
                   }`}
                   onClick={() => setSelectedImage(index)}
                 >
-                  <SafeImage 
+                  <SimpleImage 
                     src={getImageUrl(image, '/vercel.svg')} 
                     alt={`${product.name} - изображение ${index + 1}`}
-                    fill
-                    sizes="(max-width: 768px) 25vw, 10vw"
-                    className="object-cover"
+                    className="w-full h-full object-cover"
                     fallback="/vercel.svg"
                   />
                 </button>
@@ -455,12 +450,10 @@ export default function ProductPage() {
                 <Link href={`/product/${product._id}`}>
                   <div className="h-48 bg-gray-200 relative">
                     {product.images && product.images.length > 0 ? (
-                      <SafeImage 
+                      <SimpleImage 
                         src={getFirstImage(product.images, '/vercel.svg')} 
                         alt={product.name}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                        className="object-cover"
+                        className="w-full h-full object-cover"
                         fallback="/vercel.svg"
                       />
                     ) : (
