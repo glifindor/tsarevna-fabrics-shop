@@ -14,9 +14,27 @@ const nextConfig: NextConfig = {
         hostname: '212.69.87.22',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'unsplash.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        pathname: '/**',
+      },
     ],
     // Разрешаем все локальные пути для изображений
     unoptimized: false,
+    // Отключаем оптимизацию для проблемных изображений
+    minimumCacheTTL: 60,
+    formats: ['image/webp', 'image/avif'],
   },
   
   // Настройка статических файлов

@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { FiPackage, FiShoppingBag, FiUsers, FiSettings, FiLogOut, FiPlus, FiEdit, FiTrash2, FiBarChart2 } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
 import './admin-styles.css';
 import { Product, Category, User, Order, Settings } from '@/types';
+import SafeImage from '@/components/ui/SafeImage';
 
 // Компонент админ-панели
 export default function AdminPanel() {
@@ -770,20 +770,13 @@ function ProductsPanel() {
                         {formState.images.map((imageUrl, index) => (
                           <div key={index} className="relative group">
                             <div className="w-full h-24 relative border rounded-lg overflow-hidden">
-                              <Image 
+                              <SafeImage 
                                 src={imageUrl} 
                                 alt={`Изображение ${index + 1}`}
                                 fill
                                 className="object-cover"
                                 sizes="(max-width: 768px) 50vw, 25vw"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  const parent = target.parentElement;
-                                  if (parent) {
-                                    parent.innerHTML = '<div class="w-full h-full bg-red-100 text-red-500 flex items-center justify-center text-xs">Ошибка загрузки</div>';
-                                  }
-                                }}
+                                fallback="/vercel.svg"
                               />
                               <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <button
@@ -1995,7 +1988,7 @@ function CategoriesPanel() {
             <div key={cat._id} className="bg-white rounded-lg shadow p-4 flex flex-col items-center">
               {cat.image ? (
                 <div className="w-32 h-32 relative mb-2">
-                  <Image src={cat.image} alt={cat.name} fill className="object-cover rounded" sizes="128px" />
+                  <SafeImage src={cat.image} alt={cat.name} fill className="object-cover rounded" sizes="128px" fallback="/vercel.svg" />
                 </div>
               ) : (
                 <div className="w-32 h-32 bg-gray-200 rounded mb-2 flex items-center justify-center text-gray-400">Нет фото</div>
@@ -2065,20 +2058,13 @@ function CategoriesPanel() {
                       </div>
                     ) : formState.image ? (
                       <div className="w-32 h-32 relative mx-auto mb-2 border rounded-lg overflow-hidden">
-                        <Image 
+                        <SafeImage 
                           src={formState.image} 
                           alt="Превью категории" 
                           fill 
                           className="object-cover" 
                           sizes="128px"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const parent = target.parentElement;
-                            if (parent) {
-                              parent.innerHTML = '<div class="w-full h-full bg-red-100 text-red-500 flex items-center justify-center text-xs">Ошибка загрузки</div>';
-                            }
-                          }}
+                          fallback="/vercel.svg"
                         />
                       </div>
                     ) : (

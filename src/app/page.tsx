@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FaCrown, FaRulerHorizontal, FaShippingFast, FaCreditCard, FaMagic } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { getImageUrl, getFirstImage } from '@/lib/imageUtils';
+import SafeImage from '@/components/ui/SafeImage';
 
 interface Category {
   _id: string;
@@ -192,18 +193,13 @@ export default function Home() {
               >
                 <div className="bg-gray-100 rounded-lg overflow-hidden aspect-square relative hover-scale shadow-sm">
                   {category.image ? (
-                    <Image
+                    <SafeImage
                       src={getImageUrl(category.image, '/vercel.svg')}
                       alt={category.name}
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-110"
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        if (target.src !== '/vercel.svg') {
-                          target.src = '/vercel.svg';
-                        }
-                      }}
+                      fallback="/vercel.svg"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200">Нет фото</div>
@@ -236,18 +232,13 @@ export default function Home() {
                 <Link href={`/product/${product._id}`}>
                   <div className="h-64 bg-gray-200 relative">
                     {product.images && product.images.length > 0 ? (
-                      <Image
+                      <SafeImage
                         src={getFirstImage(product.images, '/vercel.svg')}
                         alt={product.name}
                         fill
                         className="object-cover"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          if (target.src !== '/vercel.svg') {
-                            target.src = '/vercel.svg';
-                          }
-                        }}
+                        fallback="/vercel.svg"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200">Нет фото</div>
