@@ -89,8 +89,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setError(null);
       
       console.log('Запрос корзины с сервера');
-      const response = await apiClient.get('/api/cart');
-      console.log('Ответ сервера (GET /api/cart):', response);
+      const response = await apiClient.get('/cart');
+      console.log('Ответ сервера (GET /cart):', response);
       
       if (response.success && response.data) {
         // Преобразование данных для правильного отображения
@@ -177,7 +177,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         console.log(`Приведенное значение: ${productIdStr}`);
         
         // Сначала попробуем добавить через новый эндпоинт
-        let response = await apiClient.post('/api/cart/add', { 
+        let response = await apiClient.post('/cart/add', { 
           productId: productIdStr, 
           quantity 
         });
@@ -185,7 +185,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         // Если не получилось, попробуем через стандартный эндпоинт
         if (!response.success) {
           console.log('Пробуем добавить через стандартный эндпоинт');
-          response = await apiClient.post('/api/cart', { 
+          response = await apiClient.post('/cart', { 
             productId: productIdStr, 
             quantity 
           });
@@ -294,7 +294,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       
       if (status === 'authenticated') {
         // Отправляем запрос на сервер для авторизованных пользователей
-        const response = await apiClient.post('/api/cart', { productId, quantity });
+        const response = await apiClient.post('/cart', { productId, quantity });
         
         if (response.success && response.data) {
           // Форматируем данные корзины, как в fetchCart
@@ -379,7 +379,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         console.log('Отправка запроса на удаление товара из корзины', { productId });
         
         // Вызываем новый эндпоинт для удаления товара
-        const response = await apiClient.post('/api/cart/remove', { productId });
+        const response = await apiClient.post('/cart/remove', { productId });
         
         if (response.success && response.data) {
           const formattedCart = {
@@ -455,7 +455,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (status === 'authenticated') {
         // Для авторизованных пользователей очищаем корзину на сервере
         try {
-          const response = await apiClient.delete('/api/cart');
+          const response = await apiClient.delete('/cart');
           if (response.success) {
             setCart({ items: [] });
           } else {

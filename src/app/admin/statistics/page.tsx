@@ -72,7 +72,7 @@ const StatisticsPage = () => {
       try {
         setIsLoading(true);
         setError(null);
-        const response = await apiClient.get('/api/orders?stats=1');
+        const response = await apiClient.get('/orders?stats=1');
         if (response.success && response.data) {
           setStatistics(response.data);
         } else {
