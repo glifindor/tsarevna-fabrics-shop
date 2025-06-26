@@ -63,7 +63,7 @@ const CatalogContent: React.FC = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        let apiUrl = '/api/products';
+        let apiUrl = 'products';
         
         // Если выбрана категория, добавляем её в запрос
         if (categoryParam && categoryParam !== 'all') {

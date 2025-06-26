@@ -15,7 +15,7 @@ import ProductEditForm from '@/components/ProductEditForm';
 // Получение похожих товаров из той же категории
 const getSimilarProducts = async (category: string, currentId: string) => {
   try {
-    const response = await apiClient.get(`/products?category=${category}`);
+    const response = await apiClient.get(`products?category=${category}`);
     if (response.success && response.data) {
       return response.data
         .filter((p: Product) => p._id !== currentId)
@@ -83,7 +83,7 @@ export default function ProductPage() {
         console.log(`🔍 Полный URL запроса: /api/products/${slug}`);
         
         // Основной запрос к API
-        const response = await apiClient.get(`/products/${slug}`);
+        const response = await apiClient.get(`products/${slug}`);
         
         console.log('📦 Ответ API:', response);
         console.log('📦 Success:', response.success);
