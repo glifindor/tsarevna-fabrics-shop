@@ -3,16 +3,17 @@ import { getServerSession } from 'next-auth/next';
 import dbConnect from '@/lib/db';
 import Cart from '@/models/Cart';
 import Product from '@/models/Product';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 // Добавление товара в корзину
 export async function POST(req: NextRequest) {
-  console.log('POST запрос к /api/cart/add получен');
+  logger.log('POST запрос к /api/cart/add получен');
   try {
     const session = await getServerSession(authOptions);
     
     if (!session || !session.user) {
-      console.log('POST /api/cart/add: Пользователь не авторизован');
+      logger.log('POST /api/cart/add: Пользователь не авторизован');
       return NextResponse.json(
         { success: false, message: 'Требуется авторизация' },
         { status: 401 }

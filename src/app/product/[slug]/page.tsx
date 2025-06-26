@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
-import { FiMinus, FiPlus, FiShoppingCart, FiHeart, FiArrowLeft } from 'react-icons/fi';
+import { useParams } from 'next/navigation';
+import { FiMinus, FiPlus, FiShoppingCart } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
 import { useCart } from '@/context/CartContext';
 import apiClient from '@/lib/apiClient';
@@ -18,7 +18,7 @@ const getSimilarProducts = async (category: string, currentId: string) => {
     const response = await apiClient.get(`/products?category=${category}`);
     if (response.success && response.data) {
       return response.data
-        .filter((p: any) => p._id !== currentId)
+        .filter((p: Product) => p._id !== currentId)
         .slice(0, 4);
     }
     return [];
@@ -46,7 +46,7 @@ interface Product {
 
 export default function ProductPage() {
   const params = useParams();
-  const router = useRouter();
+
   const slug = params.slug as string;
     const [product, setProduct] = useState<Product | null>(null);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
@@ -54,55 +54,75 @@ export default function ProductPage() {
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [isAddedToCart, setIsAddedToCart] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);  const [notification, setNotification] = useState<{
+
+  const [notification, setNotification] = useState<{
     show: boolean;
     message: string;
     type: 'success' | 'error' | 'info' | 'warning';
   }>({ show: false, message: '', type: 'info' });
   const [addingSimilarProductId, setAddingSimilarProductId] = useState<string | null>(null);
-  const { addItem, error: cartError } = useCart();
+  const { addItem } = useCart();
   const { data: session } = useSession();
   const [showEdit, setShowEdit] = useState(false);
-  const [categories, setCategories] = useState<any[]>([]);
+  interface Category {
+    _id: string;
+    name: string;
+    slug: string;
+  }
+
+  const [categories, setCategories] = useState<Category[]>([]);
 
   // Загрузка данных о товаре
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        // Пробуем сначала найти по артикулу, так как slug может быть артикулом
-        let response = await apiClient.get(`/products/${slug}`);
-        if (!(response.success && response.data)) {
-          // Если не найдено по id/slug, пробуем поиск по артикулу
-          response = await apiClient.get(`/products?search=${slug}`);
-          if (response.success && response.data && response.data.length > 0) {
-            setProduct(response.data[0]);
-            // Загружаем похожие товары из той же категории
-            const similar = await getSimilarProducts(response.data[0].category, response.data[0]._id);
-            setSimilarProducts(similar);
-            setError(null);
-            setLoading(false);
-            return;
-          }
-        } else {
+        setError(null);
+        
+        console.log(`🔍 Загрузка товара: ${slug}`);
+        console.log(`🔍 Полный URL запроса: /api/products/${slug}`);
+        
+        // Основной запрос к API
+        const response = await apiClient.get(`/products/${slug}`);
+        
+        console.log('📦 Ответ API:', response);
+        console.log('📦 Success:', response.success);
+        console.log('📦 Data:', response.data);
+        console.log('📦 Message:', response.message);
+        
+        if (response.success && response.data) {
+          console.log(`✅ Товар найден: ${response.data.name}`);
           setProduct(response.data);
+          
           // Загружаем похожие товары из той же категории
-          const similar = await getSimilarProducts(response.data.category, response.data._id);
-          setSimilarProducts(similar);
+          try {
+            const similar = await getSimilarProducts(response.data.category, response.data._id);
+            setSimilarProducts(similar);
+            console.log(`🔗 Загружено ${similar.length} похожих товаров`);
+          } catch (similarError) {
+            console.warn('⚠️ Ошибка при загрузке похожих товаров:', similarError);
+            setSimilarProducts([]);
+          }
+          
           setError(null);
-          setLoading(false);
-          return;
+        } else {
+          console.log(`❌ Товар не найден в API: ${slug}`);
+          console.log('📝 Ответ сервера:', response);
+          setError(response.message || 'Товар не найден');
+          setProduct(null);
         }
-        setError('Товар не найден');
       } catch (error) {
-        console.error('Ошибка при загрузке товара:', error);
-        setError('Не удалось загрузить информацию о товаре');
+        console.error('❌ Ошибка при загрузке товара:', error);
+        setError('Не удалось загрузить информацию о товаре. Проверьте подключение к интернету.');
+        setProduct(null);
       } finally {
         setLoading(false);
       }
     };
-    fetchProduct();
+    
+    if (slug) {
+      fetchProduct();
+    }
   }, [slug]);
 
   // Загрузка категорий для формы редактирования
@@ -112,7 +132,9 @@ export default function ProductPage() {
         const res = await fetch('/api/categories');
         const data = await res.json();
         if (data.success) setCategories(data.data);
-      } catch {}
+      } catch (error) {
+        console.error('Ошибка при загрузке категорий:', error);
+      }
     };
     fetchCategories();
   }, []);
@@ -141,7 +163,7 @@ export default function ProductPage() {
       });
       
       // Предпочтительно используем артикул товара для поиска в БД
-      let productIdentifier = product.articleNumber || product._id;
+      const productIdentifier = product.articleNumber || product._id;
       
       console.log('Идентификатор товара для добавления в корзину:', productIdentifier);
       await addItem(productIdentifier, quantity);
@@ -168,9 +190,7 @@ export default function ProductPage() {
       });
     }
   };
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
-  };
+
   
   // Обработчик для добавления похожего товара в корзину
   const addSimilarProductToCart = async (product: Product) => {
@@ -178,7 +198,7 @@ export default function ProductPage() {
       setAddingSimilarProductId(product._id);
       
       // Предпочтительно используем артикул товара для поиска в БД
-      let productIdentifier = product.articleNumber || product._id;
+      const productIdentifier = product.articleNumber || product._id;
       
       await addItem(productIdentifier, 1);
       
@@ -236,7 +256,6 @@ export default function ProductPage() {
   }
 
   const isPremium = product.price > 1500;
-  const categoryName = product.category; // Используем категорию из БД
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -322,16 +341,7 @@ export default function ProductPage() {
 
         {/* Информация о товаре */}
         <div className="md:w-1/2 px-4">
-          <div className="flex justify-between items-start">
-            <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'var(--font-title)' }}>{product.name}</h1>
-            <button 
-              onClick={toggleFavorite} 
-              className={`p-2 rounded-full ${isFavorite ? 'text-pink-500' : 'text-gray-400 hover:text-pink-500'}`}
-              aria-label={isFavorite ? "Удалить из избранного" : "Добавить в избранное"}
-            >
-              <FiHeart size={22} className={isFavorite ? 'fill-current' : ''} />
-            </button>
-          </div>
+          <h1 className="text-3xl font-bold mb-2" style={{ fontFamily: 'var(--font-title)' }}>{product.name}</h1>
           <p className="text-gray-500 mb-4">Артикул: {product.articleNumber}</p>
           
           <div className="text-2xl font-bold text-pink-600 mb-6">
@@ -438,7 +448,7 @@ export default function ProductPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {similarProducts.map((product) => (
               <div key={product._id} className="product-card">
-                <Link href={`/product/${product.slug || product.articleNumber}`}>
+                <Link href={`/product/${product._id}`}>
                   <div className="h-48 bg-gray-200 relative">
                     {product.images && product.images.length > 0 ? (
                       <Image 

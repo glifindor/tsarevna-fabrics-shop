@@ -1,10 +1,10 @@
 "use client";
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { FiFilter, FiX, FiSearch, FiShoppingCart } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
 import apiClient from '@/lib/apiClient';
@@ -25,9 +25,8 @@ interface Product {
   slug?: string;
 }
 
-const Catalog: React.FC = () => {
+const CatalogContent: React.FC = () => {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const searchQuery = searchParams.get('search') || '';
   const categoryParam = searchParams.get('category') || 'all';
   const { addItem, isLoading: isCartLoading } = useCart();
@@ -49,7 +48,13 @@ const Catalog: React.FC = () => {
   }>({ show: false, message: '', type: 'info' });
 
   // Категории тканей (динамически из базы)
-  const [categories, setCategories] = useState<any[]>([]);
+  interface Category {
+    _id: string;
+    name: string;
+    slug: string;
+  }
+
+  const [categories, setCategories] = useState<Category[]>([]);
   const [catLoading, setCatLoading] = useState(true);
   const [catError, setCatError] = useState<string | null>(null);
 
@@ -129,7 +134,7 @@ const Catalog: React.FC = () => {
         } else {
           setCatError(data.message || 'Ошибка при загрузке категорий');
         }
-      } catch (e) {
+      } catch {
         setCatError('Ошибка при загрузке категорий');
       } finally {
         setCatLoading(false);
@@ -453,7 +458,7 @@ const Catalog: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
                 <div key={product._id} className="product-card">
-                  <Link href={`/product/${product.slug || product.articleNumber}`}>
+                  <Link href={`/product/${product._id}`}>
                     <div className="h-64 bg-gray-200 relative">
                       {product.images && product.images.length > 0 ? (
                         <Image 
@@ -521,6 +526,14 @@ const Catalog: React.FC = () => {
         />
       )}
     </div>
+  );
+};
+
+const Catalog: React.FC = () => {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Загрузка каталога...</div>}>
+      <CatalogContent />
+    </Suspense>
   );
 };
 

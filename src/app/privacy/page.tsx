@@ -5,7 +5,7 @@ export default function Privacy() {
     <div className="container mx-auto px-4 py-12 max-w-2xl">
       <h1 className="page-title text-3xl font-bold mb-6">Политика конфиденциальности</h1>
       <h2 className="text-xl font-semibold mt-8 mb-2">1. Общие положения</h2>
-      <p className="mb-4">Настоящая политика конфиденциальности определяет порядок обработки и защиты персональных данных пользователей сайта "Царевна Швеяна".</p>
+      <p className="mb-4">Настоящая политика конфиденциальности определяет порядок обработки и защиты персональных данных пользователей сайта &ldquo;Царевна Швеяна&rdquo;.</p>
       <h2 className="text-xl font-semibold mt-8 mb-2">2. Какие данные собираются</h2>
       <ul className="list-disc pl-6 mb-4">
         <li>Имя, фамилия, отчество</li>

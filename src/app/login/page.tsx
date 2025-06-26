@@ -51,7 +51,7 @@ export default function Login() {
       // Редирект на главную страницу после успешного входа
       router.push('/');
       
-    } catch (err) {
+    } catch {
       setError('Произошла ошибка при входе. Пожалуйста, попробуйте еще раз.');
     } finally {
       setIsLoading(false);

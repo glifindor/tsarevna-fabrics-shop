@@ -1,10 +1,28 @@
 "use client";
 import { useState } from "react";
 
+interface Product {
+  _id: string;
+  name: string;
+  articleNumber: string;
+  description: string;
+  price: number;
+  composition: string;
+  category: string;
+  stock: number;
+  images: string[];
+}
+
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+}
+
 export default function ProductEditForm({ product, categories, onSave, onCancel }: {
-  product: any;
-  categories: any[];
-  onSave: (updated: any) => void;
+  product: Product;
+  categories: Category[];
+  onSave: (updated: Product) => void;
   onCancel: () => void;
 }) {
   const [formState, setFormState] = useState({
@@ -45,7 +63,8 @@ export default function ProductEditForm({ product, categories, onSave, onCancel 
       } else {
         setFormError(data.message || 'Ошибка при сохранении');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Ошибка при сохранении:', error);
       setFormError('Ошибка при сохранении');
     } finally {
       setSaving(false);
@@ -78,7 +97,7 @@ export default function ProductEditForm({ product, categories, onSave, onCancel 
         <label className="block text-sm mb-1">Категория</label>
         <select name="category" value={formState.category} onChange={handleInputChange} className="form-select w-full" required>
           <option value="">Выберите категорию</option>
-          {categories.map((cat: any) => (
+          {categories.map((cat: Category) => (
             <option key={cat._id} value={cat.slug}>{cat.name}</option>
           ))}
         </select>

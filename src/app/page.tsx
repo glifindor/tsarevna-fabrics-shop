@@ -4,9 +4,24 @@ import Link from "next/link";
 import { FaCrown, FaRulerHorizontal, FaShippingFast, FaCreditCard, FaMagic } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  image?: string;
+}
+
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  images: string[];
+  slug?: string;
+}
+
 export default function Home() {
   // Динамические категории
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [catLoading, setCatLoading] = useState(true);
   const [catError, setCatError] = useState<string | null>(null);
 
@@ -21,7 +36,7 @@ export default function Home() {
         } else {
           setCatError(data.message || 'Ошибка при загрузке категорий');
         }
-      } catch (e) {
+      } catch {
         setCatError('Ошибка при загрузке категорий');
       } finally {
         setCatLoading(false);
@@ -31,7 +46,7 @@ export default function Home() {
   }, []);
 
   // Популярные товары
-  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [prodLoading, setProdLoading] = useState(true);
   const [prodError, setProdError] = useState<string | null>(null);
 
@@ -45,7 +60,7 @@ export default function Home() {
         if (statsData.success && statsData.data && statsData.data.topProducts) {
           // Для каждого товара получаем подробную инфу
           const prods = await Promise.all(
-            statsData.data.topProducts.map(async (tp: any) => {
+            statsData.data.topProducts.map(async (tp: { productId: string }) => {
               const prodRes = await fetch(`/api/products/${tp.productId}`);
               const prodData = await prodRes.json();
               return prodData.success && prodData.data ? prodData.data : null;
@@ -55,7 +70,7 @@ export default function Home() {
         } else {
           setProdError('Не удалось получить популярные товары');
         }
-      } catch (e) {
+      } catch {
         setProdError('Ошибка при загрузке популярных товаров');
       } finally {
         setProdLoading(false);
@@ -119,7 +134,7 @@ export default function Home() {
                 <div className="bg-gray-100 rounded-lg overflow-hidden aspect-square relative hover-scale shadow-sm">
                   {category.image ? (
                     <Image
-                      src={category.image.startsWith('http') ? category.image : '/' + category.image.replace(/^\/+/, '')}
+                                              src={category.image && category.image.startsWith('http') ? category.image : `/uploads/${category.image ? category.image.replace(/^\/+/, '').replace(/^uploads\//, '') : 'placeholder.jpg'}`}
                       alt={category.name}
                       fill
                       className="object-cover transition-transform duration-300 group-hover:scale-110"
@@ -157,11 +172,11 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredProducts.map((product) => (
               <div key={product._id} className="product-card">
-                <Link href={`/product/${product.slug || product._id}`}>
+                <Link href={`/product/${product._id}`}>
                   <div className="h-64 bg-gray-200 relative">
                     {product.images && product.images.length > 0 ? (
                       <Image
-                        src={product.images[0].startsWith('http') ? product.images[0] : '/' + product.images[0].replace(/^\/+/, '')}
+                                                  src={product.images[0] && product.images[0].startsWith('http') ? product.images[0] : `/uploads/${product.images[0] ? product.images[0].replace(/^\/+/, '').replace(/^uploads\//, '') : 'placeholder.jpg'}`}
                         alt={product.name}
                         fill
                         className="object-cover"

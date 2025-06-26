@@ -41,7 +41,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 // Провайдер корзины
 export function CartProvider({ children }: { children: ReactNode }) {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [cart, setCart] = useState<Cart>({ items: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,8 +63,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (savedCart) {
         try {
           setCart(JSON.parse(savedCart));
-        } catch (err) {
+        } catch (error) {
           // Если не удалось парсить, используем пустую корзину
+          console.error('Ошибка при парсинге корзины из localStorage:', error);
           setCart({ items: [] });
         }      } else {
         // Если нет корзины в localStorage, используем пустую корзину
@@ -149,9 +150,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setError(response.message || 'Не удалось загрузить корзину');
         console.error('Ошибка при загрузке корзины:', response);
       }
-    } catch (err) {
+    } catch (error) {
       setError('Ошибка при загрузке корзины');
-      console.error(err);
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -277,9 +278,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
           setCart({ ...cart, items: [...cart.items, newItem] });
         }
       }
-    } catch (err) {
+    } catch (error) {
       setError('Ошибка при добавлении товара в корзину');
-      console.error(err);
+      console.error('Ошибка при добавлении товара в корзину:', error);
     } finally {
       setIsLoading(false);
     }
@@ -356,9 +357,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         
         setCart({ ...cart, items: updatedItems });
       }
-    } catch (err) {
+    } catch (error) {
       setError('Ошибка при обновлении количества товара');
-      console.error(err);
+      console.error('Ошибка при обновлении количества товара:', error);
     } finally {
       setIsLoading(false);
     }
@@ -437,9 +438,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const updatedItems = cart.items.filter(item => item.productId !== productId);
         setCart({ ...cart, items: updatedItems });
       }
-    } catch (err) {
+    } catch (error) {
       setError('Ошибка при удалении товара из корзины');
-      console.error(err);
+      console.error('Ошибка при удалении товара из корзины:', error);
     } finally {
       setIsLoading(false);
     }
@@ -450,31 +451,32 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
       setError(null);
-      let cleared = false;
+      
       if (status === 'authenticated') {
         // Для авторизованных пользователей очищаем корзину на сервере
         try {
-          const response = await apiClient.delete('/cart');
+          const response = await apiClient.delete('/api/cart');
           if (response.success) {
             setCart({ items: [] });
-            cleared = true;
           } else {
             // Даже если сервер не ответил success, очищаем локально
             setCart({ items: [] });
           }
-        } catch (err) {
+        } catch (error) {
           // Если сервер не отвечает, всё равно очищаем локально
+          console.error('Ошибка при очистке корзины на сервере:', error);
           setCart({ items: [] });
         }
       } else {
         // Для неавторизованных пользователей очищаем локальную корзину
         setCart({ items: [] });
       }
+      
       // В любом случае удаляем localStorage
       localStorage.removeItem('cart');
-    } catch (err) {
+    } catch (error) {
       // Не показываем ошибку пользователю, просто логируем
-      console.error('Ошибка при очистке корзины', err);
+      console.error('Ошибка при очистке корзины', error);
     } finally {
       setIsLoading(false);
     }

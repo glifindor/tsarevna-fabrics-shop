@@ -16,7 +16,7 @@ export interface ApiResponse<T = any> {
 
 // Настраиваем базовые параметры axios
 const api = axios.create({
-  baseURL: '',
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },

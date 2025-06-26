@@ -3,10 +3,11 @@ import { getServerSession } from 'next-auth/next';
 import dbConnect from '@/lib/db';
 import Cart from '@/models/Cart';
 import Product from '@/models/Product';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 // Получение корзины пользователя
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     
@@ -34,7 +35,7 @@ export async function GET(req: NextRequest) {
     
     return NextResponse.json({ success: true, data: cart });
   } catch (error) {
-    console.error('Ошибка при получении корзины:', error);
+    logger.error('Ошибка при получении корзины:', error);
     return NextResponse.json(
       { success: false, message: 'Ошибка при получении корзины', error },
       { status: 500 }
@@ -44,12 +45,12 @@ export async function GET(req: NextRequest) {
 
 // Добавление товара в корзину
 export async function POST(req: NextRequest) {
-  console.log('POST запрос к /api/cart получен');
+  logger.log('POST запрос к /api/cart получен');
   try {
     const session = await getServerSession(authOptions);
     
     if (!session || !session.user) {
-      console.log('POST /api/cart: Пользователь не авторизован');
+      logger.log('POST /api/cart: Пользователь не авторизован');
       return NextResponse.json(
         { success: false, message: 'Требуется авторизация' },
         { status: 401 }
@@ -60,11 +61,11 @@ export async function POST(req: NextRequest) {
     
     const userId = session.user.id;
     const body = await req.json();
-    console.log('POST /api/cart: Получены данные', { userId, body });
+    logger.log('POST /api/cart: Получены данные', { userId, body });
     
     // Проверка обязательных полей
     if (!body.productId || !body.quantity) {
-      console.log('POST /api/cart: Не указаны обязательные поля', body);
+      logger.log('POST /api/cart: Не указаны обязательные поля', body);
       return NextResponse.json(
         { success: false, message: 'Не указан ID товара или количество' },
         { status: 400 }
@@ -73,7 +74,7 @@ export async function POST(req: NextRequest) {
     
     // Проверка существования товара
     const product = await Product.findById(body.productId);
-    console.log('POST /api/cart: Поиск продукта', { productId: body.productId, found: !!product });
+    logger.log('POST /api/cart: Поиск продукта', { productId: body.productId, found: !!product });
     if (!product) {
       return NextResponse.json(
         { success: false, message: 'Товар не найден' },
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Проверка наличия на складе
-    console.log('POST /api/cart: Проверка наличия', { stock: product.stock, requested: body.quantity });
+    logger.log('POST /api/cart: Проверка наличия', { stock: product.stock, requested: body.quantity });
     if (product.stock < body.quantity) {
       return NextResponse.json(
         { 
@@ -96,11 +97,11 @@ export async function POST(req: NextRequest) {
     
     // Поиск корзины пользователя
     let cart = await Cart.findOne({ userId });
-    console.log('POST /api/cart: Поиск корзины', { userId, cartFound: !!cart });
+    logger.log('POST /api/cart: Поиск корзины', { userId, cartFound: !!cart });
     
     // Если корзины нет, создаем новую
     if (!cart) {
-      console.log('POST /api/cart: Создание новой корзины');
+      logger.log('POST /api/cart: Создание новой корзины');
       cart = await Cart.create({
         userId,
         items: [{
@@ -113,7 +114,7 @@ export async function POST(req: NextRequest) {
       const itemIndex = cart.items.findIndex(
         (item: any) => item.productId && item.productId.toString() === body.productId
       );
-      console.log('POST /api/cart: Проверка товара в корзине', { itemIndex, items: cart.items });
+      logger.log('POST /api/cart: Проверка товара в корзине', { itemIndex, items: cart.items });
       
       if (itemIndex > -1) {
         // Обновляем количество
@@ -138,7 +139,7 @@ export async function POST(req: NextRequest) {
       data: updatedCart
     });
   } catch (error) {
-    console.error('Ошибка при добавлении товара в корзину:', error);
+    logger.error('Ошибка при добавлении товара в корзину:', error);
     return NextResponse.json(
       { success: false, message: 'Ошибка при добавлении товара в корзину', error },
       { status: 500 }
@@ -216,11 +217,12 @@ export async function PUT(req: NextRequest) {
 }
 
 // Удаление всей корзины
-export async function DELETE(req: NextRequest) {
+export async function DELETE() {
   try {
     const session = await getServerSession(authOptions);
     
     if (!session || !session.user) {
+      logger.log('DELETE /api/cart: Пользователь не авторизован');
       return NextResponse.json(
         { success: false, message: 'Требуется авторизация' },
         { status: 401 }
@@ -230,16 +232,18 @@ export async function DELETE(req: NextRequest) {
     await dbConnect();
     
     const userId = session.user.id;
+    logger.log('DELETE /api/cart: Очистка корзины для пользователя', { userId });
     
     // Удаляем корзину
-    await Cart.findOneAndDelete({ userId });
+    const deletedCart = await Cart.findOneAndDelete({ userId });
+    logger.log('DELETE /api/cart: Результат удаления', { deleted: !!deletedCart });
     
     return NextResponse.json({
       success: true,
       message: 'Корзина очищена'
     });
   } catch (error) {
-    console.error('Ошибка при очистке корзины:', error);
+    logger.error('Ошибка при очистке корзины:', error);
     return NextResponse.json(
       { success: false, message: 'Ошибка при очистке корзины', error },
       { status: 500 }

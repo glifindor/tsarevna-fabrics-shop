@@ -2,15 +2,46 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { FiPackage, FiShoppingBag, FiUsers, FiSettings, FiLogOut, FiPlus, FiEdit, FiTrash2, FiBarChart2 } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
 import './admin-styles.css';
+import { Product, Category, User, Order, Settings } from '@/types';
 
 // Компонент админ-панели
 export default function AdminPanel() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState('products');
+
+  // Проверка доступа администратора
+  useEffect(() => {
+    if (status === 'loading') return; // Ждем загрузку сессии
+    
+    if (!session || session.user?.role !== 'admin') {
+      router.push('/login');
+      return;
+    }
+  }, [session, status, router]);
+
+  // Показываем загрузку пока проверяется сессия
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Проверка доступа...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Если нет доступа, не показываем содержимое
+  if (!session || session.user?.role !== 'admin') {
+    return null;
+  }
 
   const handleLogout = () => {
     // Здесь будет логика выхода из системы
@@ -127,11 +158,11 @@ export default function AdminPanel() {
 
 // Панель управления товарами
 function ProductsPanel() {
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [currentProduct, setCurrentProduct] = useState<any>(null);
+  const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [formState, setFormState] = useState({
@@ -146,7 +177,7 @@ function ProductsPanel() {
   });
   const [formError, setFormError] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [catLoading, setCatLoading] = useState(true);
   const [catError, setCatError] = useState<string | null>(null);
 
@@ -182,7 +213,8 @@ function ProductsPanel() {
         } else {
           setCatError(data.message || 'Ошибка при загрузке категорий');
         }
-      } catch (e) {
+      } catch (error) {
+        console.error('Ошибка при загрузке категорий:', error);
         setCatError('Ошибка при загрузке категорий');
       } finally {
         setCatLoading(false);
@@ -195,7 +227,7 @@ function ProductsPanel() {
   useEffect(() => {
     fetchProducts();
   }, []);  // Обработка открытия модального окна для добавления/редактирования
-  const handleOpenModal = (product: any = null) => {
+  const handleOpenModal = (product: Product | null = null) => {
     if (product) {
       setFormState({
         name: product.name,
@@ -367,16 +399,101 @@ function ProductsPanel() {
     }
   };
 
+  // Добавление тестовых товаров
+  const handleAddTestProducts = async () => {
+    const testProducts = [
+      {
+        name: 'Хлопок "Розовые мечты"',
+        articleNumber: 'TK001',
+        description: 'Нежный хлопковый материал с цветочным принтом. Идеален для детской одежды и домашнего текстиля.',
+        price: 450,
+        composition: '100% хлопок',
+        category: 'хлопок',
+        stock: 25,
+        images: []
+      },
+      {
+        name: 'Лен "Морской бриз"',
+        articleNumber: 'TK002', 
+        description: 'Натуральный лен премиум качества. Дышащий материал для летней одежды.',
+        price: 680,
+        composition: '100% лен',
+        category: 'лен',
+        stock: 15,
+        images: []
+      },
+      {
+        name: 'Шелк "Золотая осень"',
+        articleNumber: 'TK003',
+        description: 'Роскошный натуральный шелк с золотистым отливом. Для вечерних нарядов.',
+        price: 1250,
+        composition: '100% шелк',
+        category: 'шелк',
+        stock: 8,
+        images: []
+      },
+      {
+        name: 'Шерсть "Зимняя сказка"',
+        articleNumber: 'TK004',
+        description: 'Мягкая шерстяная ткань для теплой одежды. Отличные теплоизоляционные свойства.',
+        price: 890,
+        composition: '100% шерсть',
+        category: 'шерсть',
+        stock: 12,
+        images: []
+      }
+    ];
+
+    try {
+      setLoading(true);
+      
+      for (const product of testProducts) {
+        const response = await fetch('/api/products', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(product),
+        });
+        
+        const result = await response.json();
+        if (!result.success) {
+          console.error('Ошибка при создании товара:', product.name, result.message);
+        }
+      }
+      
+      // Перезагружаем список товаров
+      await fetchProducts();
+      
+      alert('Тестовые товары успешно добавлены!');
+    } catch (err) {
+      setError('Ошибка при добавлении тестовых товаров');
+      console.error('Ошибка при добавлении тестовых товаров:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl admin-title mb-5">Управление товарами</h2>        <button 
-          onClick={() => handleOpenModal()} 
-          className="btn-primary px-4 py-2 rounded-md flex items-center transition"
-        >
-          <FiPlus className="mr-2" />
-          Добавить товар
-        </button>
+        <h2 className="text-2xl admin-title mb-5">Управление товарами</h2>
+        <div className="flex space-x-2">
+          <button 
+            onClick={handleAddTestProducts} 
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition flex items-center"
+          >
+            <FiPackage className="mr-2" />
+            Добавить тестовые товары
+          </button>
+          <button 
+            onClick={() => handleOpenModal()} 
+            className="btn-primary px-4 py-2 rounded-md flex items-center transition"
+          >
+            <FiPlus className="mr-2" />
+            Добавить товар
+          </button>
+        </div>
       </div>
       
       {/* Сообщение об ошибке */}
@@ -630,11 +747,15 @@ function ProductsPanel() {
                     <div className="mt-2 grid grid-cols-3 gap-2">
                       {formState.images.map((imageUrl, index) => (
                         <div key={index} className="relative">
-                          <img 
-                            src={imageUrl} 
-                            alt={`Изображение ${index + 1}`}
-                            className="w-full h-20 object-cover rounded border"
-                          />
+                          <div className="w-full h-20 relative">
+                            <Image 
+                              src={imageUrl} 
+                              alt={`Изображение ${index + 1}`}
+                              fill
+                              className="object-cover rounded border"
+                              sizes="(max-width: 768px) 33vw, 20vw"
+                            />
+                          </div>
                           <button
                             type="button"
                             onClick={() => removeImage(index)}
@@ -701,11 +822,11 @@ function ProductsPanel() {
 
 // Панель управления заказами
 function OrdersPanel() {
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [currentOrder, setCurrentOrder] = useState<any>(null);
+  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [formState, setFormState] = useState({
     status: ''
   });
@@ -1063,13 +1184,13 @@ function OrdersPanel() {
 
 // Панель управления пользователями
 function UsersPanel() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [formState, setFormState] = useState({
     name: '',
     email: '',
@@ -1104,7 +1225,7 @@ function UsersPanel() {
   }, []);
 
   // Обработка открытия модального окна для добавления/редактирования
-  const handleOpenModal = (user: any = null) => {
+  const handleOpenModal = (user: User | null = null) => {
     if (user) {
       // Редактирование существующего пользователя
       setFormState({
@@ -1149,10 +1270,10 @@ function UsersPanel() {
 
     try {
       // Подготовка данных для отправки
-      const userData: any = {
+      const userData: Partial<User> & { password?: string } = {
         name: formState.name,
         email: formState.email,
-        role: formState.role
+        role: formState.role as 'user' | 'admin'
       };
       
       // Добавляем пароль только при создании нового пользователя или если он был изменен
@@ -1472,7 +1593,7 @@ function UsersPanel() {
 
 // Панель настроек
 function SettingsPanel() {
-  const [formState, setFormState] = useState({
+  const [formState, setFormState] = useState<Settings>({
     shopName: '',
     shopDescription: '',
     shopPhone: '',
@@ -1500,7 +1621,8 @@ function SettingsPanel() {
         } else {
           setError(data.message || 'Ошибка при загрузке настроек');
         }
-      } catch (e) {
+      } catch (error) {
+        console.error('Ошибка при загрузке настроек:', error);
         setError('Ошибка при загрузке настроек');
       } finally {
         setInitialLoading(false);
@@ -1538,7 +1660,8 @@ function SettingsPanel() {
       } else {
         setError(data.message || 'Ошибка при сохранении настроек');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Ошибка при сохранении настроек:', error);
       setError('Ошибка при сохранении настроек');
     } finally {
       setLoading(false);
@@ -1755,7 +1878,8 @@ function CategoriesPanel() {
       } else {
         setError(result.message || 'Ошибка при загрузке категорий');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Ошибка при загрузке категорий:', error);
       setError('Ошибка при загрузке категорий');
     } finally {
       setLoading(false);
@@ -1764,7 +1888,7 @@ function CategoriesPanel() {
 
   useEffect(() => { fetchCategories(); }, []);
 
-  const handleOpenModal = (category: any = null) => {
+  const handleOpenModal = (category: Category | null = null) => {
     if (category) {
       setFormState({ name: category.name, slug: category.slug, image: category.image || '' });
       setCurrentCategory(category);
@@ -1798,7 +1922,8 @@ function CategoriesPanel() {
       } else {
         setFormError(result.message || 'Ошибка при сохранении категории');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Ошибка при сохранении категории:', error);
       setFormError('Ошибка при сохранении категории');
     }
   };
@@ -1813,7 +1938,8 @@ function CategoriesPanel() {
       } else {
         alert(result.message || 'Ошибка при удалении');
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Ошибка при удалении категории:', error);
       alert('Ошибка при удалении');
     }
   };
@@ -1833,7 +1959,9 @@ function CategoriesPanel() {
           {categories.map((cat) => (
             <div key={cat._id} className="bg-white rounded-lg shadow p-4 flex flex-col items-center">
               {cat.image ? (
-                <img src={cat.image} alt={cat.name} className="w-32 h-32 object-cover rounded mb-2" />
+                <div className="w-32 h-32 relative mb-2">
+                  <Image src={cat.image} alt={cat.name} fill className="object-cover rounded" sizes="128px" />
+                </div>
               ) : (
                 <div className="w-32 h-32 bg-gray-200 rounded mb-2 flex items-center justify-center text-gray-400">Нет фото</div>
               )}
@@ -1922,7 +2050,9 @@ function CategoriesPanel() {
                     {uploadingImage ? (
                       <span className="text-pink-500">Загрузка...</span>
                     ) : formState.image ? (
-                      <img src={formState.image} alt="Превью" className="w-24 h-24 object-cover rounded mx-auto mb-2" />
+                      <div className="w-24 h-24 relative mx-auto mb-2">
+                        <Image src={formState.image} alt="Превью" fill className="object-cover rounded" sizes="96px" />
+                      </div>
                     ) : (
                       <span className="text-gray-400">Перетащите файл или кликните для выбора</span>
                     )}

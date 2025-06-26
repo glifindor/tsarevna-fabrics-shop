@@ -4,7 +4,8 @@ import dbConnect from '@/lib/db';
 import Order from '@/models/Order';
 import Cart from '@/models/Cart';
 import Product from '@/models/Product';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 // Получение списка заказов пользователя
 export async function GET(req: NextRequest) {
@@ -118,7 +119,7 @@ export async function GET(req: NextRequest) {
       }
     });
   } catch (error) {
-    console.error('Ошибка при получении списка заказов:', error);
+    logger.error('Ошибка при получении списка заказов:', error);
     return NextResponse.json(
       { success: false, message: 'Ошибка при получении списка заказов', error },
       { status: 500 }
@@ -240,7 +241,7 @@ export async function POST(req: NextRequest) {
       }
     }, { status: 201 });
   } catch (error) {
-    console.error('Ошибка при оформлении заказа:', error);
+    logger.error('Ошибка при оформлении заказа:', error);
     return NextResponse.json(
       { success: false, message: 'Ошибка при оформлении заказа', error },
       { status: 500 }

@@ -2,10 +2,10 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+// import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
-import { FiMenu, FiX, FiShoppingCart, FiUser, FiSearch, FiHeart } from 'react-icons/fi';
+import { FiMenu, FiX, FiShoppingCart, FiUser, FiSearch } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
 import { useCart } from '@/context/CartContext';
 
@@ -50,7 +50,7 @@ export default function Header() {
   }, [isUserMenuOpen]);
 
   return (
-    <header className="bg-white shadow-md relative">
+    <header className="bg-white shadow-md relative z-50">
       {/* Декоративная полоса */}
       <div className="h-1 bg-gradient-to-r from-pink-400 via-pink-300 to-pink-400"></div>
       
@@ -76,13 +76,13 @@ export default function Header() {
                 <input
                   type="text"
                   placeholder="Поиск по названию или артикулу..."
-                  className="form-input py-2 px-4 pr-10 border-pink-200 rounded-full focus:outline-none focus:ring-2 focus:ring-pink-300"
+                  className="w-full py-2 px-4 pr-10 border border-pink-200 rounded-full focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-400"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <button
                   type="submit"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-pink-500"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-pink-500 transition-colors"
                 >
                   <FiSearch size={18} />
                 </button>
@@ -96,73 +96,103 @@ export default function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm font-medium hover:text-pink-500 transition relative group ${
+                className={`text-sm font-medium hover:text-pink-500 transition-colors relative group ${
                   pathname === link.href ? 'text-pink-500' : 'text-gray-700'
                 }`}
               >
                 {link.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-400 transition-all group-hover:w-full"></span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-400 transition-all duration-300 group-hover:w-full"></span>
               </Link>
             ))}
           </nav>
 
           {/* Иконки справа */}
           <div className="flex items-center space-x-5">
-            <Link href="/favorites" className="text-gray-700 hover:text-pink-500 relative">
-              <FiHeart size={22} />
-            </Link>
-            
-            <Link href="/cart" className="text-gray-700 hover:text-pink-500 relative">
+            <Link href="/cart" className="text-gray-700 hover:text-pink-500 transition-colors relative">
               <FiShoppingCart size={22} />
               {/* Если есть товары в корзине, показываем счетчик */}
               {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
                   {totalItems > 99 ? '99+' : totalItems}
                 </span>
               )}            </Link>
 
             {session ? (
-              <div className="relative">
+              <div className="relative" ref={userMenuRef}>
                 <button 
-                  className="text-gray-700 hover:text-pink-500 flex items-center"
+                  className="text-gray-700 hover:text-pink-500 transition-colors flex items-center space-x-1 p-1"
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  aria-expanded={isUserMenuOpen}
+                  aria-haspopup="true"
                 >
                   <FiUser size={22} />
                 </button>
+                
                 {isUserMenuOpen && (
-                  <div ref={userMenuRef} className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2 z-10 border border-pink-100">
-                    <div className="px-4 py-2 border-b border-pink-100 text-sm font-medium text-gray-700">
-                      {session.user?.name || 'Пользователь'}
+                  <div className="absolute right-0 mt-2 w-56 bg-white shadow-xl rounded-lg py-2 z-50 border border-gray-100 animate-fadeIn">
+                    {/* Заголовок с именем пользователя */}
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-semibold text-gray-800 truncate">
+                        {session.user?.name || 'Пользователь'}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {session.user?.email}
+                      </p>
                     </div>
-                    <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-pink-50 transition" onClick={() => setIsUserMenuOpen(false)}>
-                      Личный кабинет
-                    </Link>
-                    {session.user?.role === 'admin' && (
-                      <Link href="/admin" className="block px-4 py-2 text-sm text-gray-700 hover:bg-pink-50 transition" onClick={() => setIsUserMenuOpen(false)}>
-                        Админ-панель
+                    
+                    {/* Пункты меню */}
+                    <div className="py-1">
+                      <Link 
+                        href="/profile" 
+                        className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-200"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        <FiUser className="mr-3" size={16} />
+                        Личный кабинет
                       </Link>
-                    )}
+                      
+                      {session.user?.role === 'admin' && (
+                        <Link 
+                          href="/admin" 
+                          className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-200"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <FaCrown className="mr-3" size={16} />
+                          Админ-панель
+                        </Link>
+                      )}
+                    </div>
+                    
+                    {/* Разделитель */}
+                    <div className="border-t border-gray-100 my-1"></div>
+                    
+                    {/* Кнопка выхода */}
                     <button
                       onClick={() => {
                         signOut();
                         setIsUserMenuOpen(false);
                       }}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-pink-50 transition"
+                      className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
                     >
+                      <svg className="mr-3" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16,17 21,12 16,7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                      </svg>
                       Выйти
                     </button>
                   </div>
                 )}
               </div>
             ) : (
-              <Link href="/login" className="text-gray-700 hover:text-pink-500 flex items-center">
+              <Link href="/login" className="text-gray-700 hover:text-pink-500 transition-colors flex items-center">
                 <FiUser size={22} />
               </Link>
             )}
 
             {/* Мобильное меню - гамбургер */}
             <button
-              className="text-gray-700 hover:text-pink-500 md:hidden"
+              className="text-gray-700 hover:text-pink-500 transition-colors md:hidden"
               onClick={toggleMenu}
               aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
             >
@@ -180,7 +210,7 @@ export default function Header() {
                 <input
                   type="text"
                   placeholder="Поиск по названию или артикулу..."
-                  className="form-input py-2 px-4 pr-10 border-pink-200 rounded-full focus:outline-none focus:ring-2 focus:ring-pink-300"
+                  className="w-full py-2 px-4 pr-10 border border-pink-200 rounded-full focus:outline-none focus:ring-2 focus:ring-pink-300"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -199,7 +229,7 @@ export default function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm font-medium hover:text-pink-500 transition ${
+                  className={`text-sm font-medium hover:text-pink-500 transition-colors ${
                     pathname === link.href ? 'text-pink-500' : 'text-gray-700'
                   }`}
                   onClick={() => setIsMenuOpen(false)}
@@ -210,7 +240,7 @@ export default function Header() {
               {!session ? (
                 <Link
                   href="/login"
-                  className="text-sm font-medium text-gray-700 hover:text-pink-500 transition"
+                  className="text-sm font-medium text-gray-700 hover:text-pink-500 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Войти
@@ -219,7 +249,7 @@ export default function Header() {
                 <>
                   <Link
                     href="/profile"
-                    className="text-sm font-medium text-gray-700 hover:text-pink-500 transition"
+                    className="text-sm font-medium text-gray-700 hover:text-pink-500 transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Личный кабинет
@@ -227,7 +257,7 @@ export default function Header() {
                   {session.user?.role === 'admin' && (
                     <Link
                       href="/admin"
-                      className="text-sm font-medium text-gray-700 hover:text-pink-500 transition"
+                      className="text-sm font-medium text-gray-700 hover:text-pink-500 transition-colors"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Админ-панель
@@ -238,7 +268,7 @@ export default function Header() {
                       signOut();
                       setIsMenuOpen(false);
                     }}
-                    className="text-left text-sm font-medium text-gray-700 hover:text-pink-500 transition"
+                    className="text-left text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
                   >
                     Выйти
                   </button>
@@ -250,6 +280,23 @@ export default function Header() {
       </div>
         {/* Декоративная линия внизу */}
       <div className="h-1 bg-gradient-to-r from-pink-300 via-pink-200 to-pink-300"></div>
+      
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+      `}</style>
     </header>
   );
 }

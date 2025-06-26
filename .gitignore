@@ -31,7 +31,7 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+
 
 # vercel
 .vercel
@@ -39,3 +39,33 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# backup files
+*.backup
+*.bak
+*.old
+*.tmp
+*.temp
+*.swp
+*~
+
+# editor files
+.vscode/settings.json
+.idea/
+*.sublime-*
+
+# log files
+*.log
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+
+# temporary files
+*.new
+*.fixed
+*.test
+
+# uploads (if not needed in repo)
+/public/uploads/*
+!/public/uploads/.gitkeep

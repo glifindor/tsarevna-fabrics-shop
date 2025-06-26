@@ -58,7 +58,7 @@ export default function Contacts() {
                 <div>
                   <h3 className="font-bold mb-1">Адрес</h3>
                   <p className="text-gray-700">г. Москва, ул. Текстильщиков, д. 7, стр. 1</p>
-                  <p className="text-gray-700">Мы находимся в 5 минутах ходьбы от станции метро "Текстильщики"</p>
+                  <p className="text-gray-700">Мы находимся в 5 минутах ходьбы от станции метро &ldquo;Текстильщики&rdquo;</p>
                 </div>
               </div>
               
@@ -94,7 +94,7 @@ export default function Contacts() {
             <div className="mt-8">
               <h3 className="font-bold mb-3">Реквизиты компании</h3>
               <div className="bg-gray-50 p-4 rounded-md text-sm">
-                <p>ООО "Царевна Швеяна"</p>
+                <p>ООО &ldquo;Царевна Швеяна&rdquo;</p>
                 <p>ИНН: 7701234567</p>
                 <p>КПП: 770101001</p>
                 <p>ОГРН: 1157701234567</p>

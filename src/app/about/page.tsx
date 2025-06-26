@@ -15,7 +15,7 @@ export default function About() {
       
       <div className="text-center mb-12 relative">
         <h1 className="text-4xl font-bold mb-4 text-brand-primary relative inline-block">
-          О компании "Царевна Швеяна"
+          О компании &ldquo;Царевна Швеяна&rdquo;
           <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-yellow-400 text-2xl">👑</span>
         </h1>
         <div className="w-32 h-1 bg-gradient-to-r from-transparent via-pink-400 to-transparent mx-auto"></div>
@@ -28,7 +28,7 @@ export default function About() {
           <span className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-pink-300 to-transparent"></span>
         </h2>
         <p className="text-gray-700 mb-6 leading-relaxed">
-          Компания "Царевна Швеяна" начала свою деятельность в 2018 году как небольшой семейный магазин тканей. 
+          Компания &ldquo;Царевна Швеяна&rdquo; начала свою деятельность в 2018 году как небольшой семейный магазин тканей. 
           За годы работы мы выросли в одного из ведущих поставщиков высококачественных тканей для рукоделия, 
           творчества и профессионального пошива.
         </p>

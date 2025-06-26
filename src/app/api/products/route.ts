@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Product from '@/models/Product';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 
 export async function GET(req: NextRequest) {
   try {
@@ -46,7 +47,7 @@ export async function GET(req: NextRequest) {
       }
     });
   } catch (error) {
-    console.error('Ошибка при получении списка товаров:', error);
+    logger.error('Ошибка при получении списка товаров:', error);
     return NextResponse.json(
       { success: false, message: 'Ошибка при получении списка товаров', error },
       { status: 500 }
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
       // Валидация данных
     if (!body.name || !body.price || !body.articleNumber || !body.category) {
-      console.log('Validation failed:', { 
+      logger.log('Validation failed:', { 
         name: body.name ? 'Valid' : 'Missing', 
         price: body.price ? 'Valid' : 'Missing', 
         articleNumber: body.articleNumber ? 'Valid' : 'Missing', 
@@ -89,7 +90,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Логирование входящих данных
-    console.log('Creating product with data:', { 
+    logger.log('Creating product with data:', { 
       name: body.name,
       price: body.price,
       articleNumber: body.articleNumber,
@@ -114,21 +115,21 @@ export async function POST(req: NextRequest) {
       
       const product = await Product.create(body);
       
-      console.log('Product created successfully:', product);
+      logger.log('Product created successfully:', product);
       
       return NextResponse.json(
         { success: true, message: 'Товар успешно создан', data: product },
         { status: 201 }
       );
     } catch (createError) {
-      console.error('Error creating product:', createError);
+      logger.error('Error creating product:', createError);
       return NextResponse.json(
         { success: false, message: 'Ошибка при создании товара', error: createError },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error('Ошибка при создании товара:', error);
+    logger.error('Ошибка при создании товара:', error);
     return NextResponse.json(
       { success: false, message: 'Ошибка при создании товара', error },
       { status: 500 }

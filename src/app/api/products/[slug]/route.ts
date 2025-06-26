@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Product from '@/models/Product';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {    await dbConnect();
     
@@ -20,27 +20,61 @@ export async function GET(
       );
     }
     
-    // Пробуем найти товар по разным полям - ObjectId, articleNumber или slug
+    // Улучшенный поиск товара по разным полям
     let product;
     
+    console.log(`🔍 Поиск товара: ${productId}`);
+    
     try {
-      // Сначала пробуем найти по _id (если это валидный ObjectId)
+      // 1. Сначала пробуем найти по _id (если это валидный ObjectId)
       if (productId.match(/^[0-9a-fA-F]{24}$/)) {
+        console.log(`🔍 Поиск по MongoDB ObjectId: ${productId}`);
         product = await Product.findById(productId);
+        if (product) {
+          console.log(`✅ Товар найден по ID: ${product.name} (${product.articleNumber})`);
+        }
       }
       
-      // Если не нашли, пробуем по артикулу
+      // 2. Если не нашли, пробуем по артикулу
       if (!product) {
+        console.log(`🔍 Поиск по артикулу: ${productId}`);
         product = await Product.findOne({ articleNumber: productId });
+        if (product) {
+          console.log(`✅ Товар найден по артикулу: ${product.name} (ID: ${product._id})`);
+        }
       }
       
-      // Если все еще не нашли, пробуем по slug (если он используется)
+      // 3. Если все еще не нашли, пробуем по slug
       if (!product) {
+        console.log(`🔍 Поиск по slug: ${productId}`);
         product = await Product.findOne({ slug: productId });
+        if (product) {
+          console.log(`✅ Товар найден по slug: ${product.name} (ID: ${product._id})`);
+        }
       }
+      
+      // 4. Последняя попытка - поиск по названию (частичное совпадение)
+      if (!product) {
+        console.log(`🔍 Поиск по названию: ${productId}`);
+        product = await Product.findOne({ 
+          name: { $regex: productId, $options: 'i' } 
+        });
+        if (product) {
+          console.log(`✅ Товар найден по названию: ${product.name} (ID: ${product._id})`);
+        }
+      }
+      
+      // 5. Показать все товары в базе для отладки
+      if (!product) {
+        console.log(`❌ Товар не найден. Показываю все товары в базе:`);
+        const allProducts = await Product.find({}).limit(10);
+        allProducts.forEach((p, index) => {
+          console.log(`${index + 1}. ID: ${p._id}, Артикул: ${p.articleNumber}, Название: ${p.name}`);
+        });
+      }
+      
     } catch (findError) {
-      console.error('Ошибка при поиске товара:', findError);
-      // Падаем до общего catch блока
+      console.error('❌ Ошибка при поиске товара:', findError);
     }
     
     if (!product) {
@@ -62,7 +96,7 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     // Проверяем авторизацию и роль
@@ -150,7 +184,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     // Проверяем авторизацию и роль

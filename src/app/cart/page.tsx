@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { FiMinus, FiPlus, FiTrash2, FiArrowLeft, FiShoppingBag, FiAlertTriangle } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
+import { getImageUrl } from '@/lib/imageUtils';
 import { useCart } from '@/context/CartContext';
 
 export default function Cart() {
@@ -93,10 +95,12 @@ export default function Cart() {
                         {/* Изображение товара */}
                         <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-200 rounded-md flex-shrink-0 mr-0 sm:mr-6 mb-4 sm:mb-0 relative overflow-hidden">
                           {item.image && typeof item.image === 'string' && item.image.trim() !== '' ? (
-                            <img
-                              src={item.image.startsWith('http') ? item.image : `/` + item.image.replace(/^\/+/, '')}
+                            <Image
+                              src={getImageUrl(item.image)}
                               alt={item.name || 'Товар'}
-                              className="object-cover w-full h-full"
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 640px) 96px, 128px"
                             />
                           ) : (
                             <div className="flex items-center justify-center w-full h-full text-gray-400">

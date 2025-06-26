@@ -9,7 +9,6 @@ import { z } from 'zod';
 import { FiArrowLeft, FiCheck, FiAlertTriangle } from 'react-icons/fi';
 import { useCart } from '@/context/CartContext';
 import { useSession } from 'next-auth/react';
-import apiClient from '@/lib/apiClient';
 import axios from 'axios';
 
 // Новый список транспортных компаний
@@ -29,6 +28,9 @@ const checkoutSchema = z.object({
   email: z.string().email({ message: "Пожалуйста, введите корректный email" }),
   deliveryMethod: z.enum(["pickup", "delivery"], {
     errorMap: () => ({ message: "Выберите способ доставки" })
+  }),
+  paymentMethod: z.enum(["cash", "card"], {
+    errorMap: () => ({ message: "Выберите способ оплаты" })
   }),
   // Новые поля для доставки
   recipientName: z.string().optional(),
@@ -57,7 +59,7 @@ type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
 export default function Checkout() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const { cart, clearCart, totalAmount } = useCart();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
@@ -83,6 +85,7 @@ export default function Checkout() {
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       deliveryMethod: "pickup",
+      paymentMethod: "cash",
     }
   });
 
@@ -98,7 +101,7 @@ export default function Checkout() {
   const deliveryMethod = watch("deliveryMethod");
   
   // Функция для обработки отправки формы
-  const onSubmit = (data: CheckoutFormData) => {
+  const onSubmit = () => {
     setStep('confirmation');
   };
   // Функция для подтверждения и отправки заказа
@@ -107,10 +110,32 @@ export default function Checkout() {
       setIsSubmitting(true);
       setOrderError("");
       const formData = watch();
+      
+      console.log('🔍 Отправка заказа в API...');
+      
+      // Отправляем заказ в API для сохранения в базу данных
+      const orderResponse = await axios.post('/api/orders', {
+        customerName: formData.customerName,
+        phone: formData.phone,
+        email: formData.email,
+        address: formData.address || '',
+        deliveryMethod: formData.deliveryMethod,
+        paymentMethod: formData.paymentMethod,
+        comment: formData.comment || ''
+      });
+      
+      if (!orderResponse.data.success) {
+        throw new Error(orderResponse.data.message || 'Ошибка при создании заказа');
+      }
+      
+      const { orderNumber: orderNum } = orderResponse.data.data;
+      console.log('✅ Заказ создан в базе данных:', orderNum);
+      
       // Формируем текст для Telegram
-      let tgText = `🧵 Новый заказ\n`;
+      let tgText = `🧵 Новый заказ #${orderNum}\n`;
       tgText += `Имя: ${formData.customerName}\nТелефон: ${formData.phone}\nEmail: ${formData.email}\n`;
       tgText += `Способ доставки: ${formData.deliveryMethod === 'pickup' ? 'Самовывоз' : 'Доставка'}\n`;
+      tgText += `Способ оплаты: ${formData.paymentMethod === 'cash' ? 'Наличными' : 'Картой'}\n`;
       if (formData.deliveryMethod === 'delivery') {
         tgText += `Получатель: ${formData.recipientName}\nТелефон получателя: ${formData.recipientPhone}\nEmail получателя: ${formData.recipientEmail}\n`;
         tgText += `ТК: ${formData.deliveryCompany}\nАдрес: ${formData.address}\n`;
@@ -121,25 +146,41 @@ export default function Checkout() {
         tgText += `${idx + 1}. ${item.name} — ${item.quantity} м × ${item.price} ₽\n`;
       });
       tgText += `Итого: ${totalAmount.toLocaleString()} ₽`;
-      // Отправка в Telegram
+      
+      // Отправка в Telegram (опционально)
       const botToken = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
       const chatId = process.env.NEXT_PUBLIC_TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_ADMIN_CHAT_ID;
-      if (!botToken || !chatId) throw new Error('Telegram bot token или chat id не заданы');
-      await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        chat_id: chatId,
-        text: tgText,
-        parse_mode: 'HTML',
-      });
+      
+      if (botToken && chatId) {
+        try {
+          await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            chat_id: chatId,
+            text: tgText,
+            parse_mode: 'HTML',
+          });
+          console.log('✅ Уведомление в Telegram отправлено успешно');
+        } catch (telegramError) {
+          console.error('⚠️ Ошибка отправки в Telegram:', telegramError);
+          // Не прерываем процесс оформления заказа из-за ошибки Telegram
+        }
+      } else {
+        console.log('ℹ️ Telegram уведомления не настроены');
+      }
+      
+      // Очищаем корзину после успешной отправки заказа
+      console.log('🧹 Очищаем корзину...');
       await clearCart();
+      console.log('✅ Корзина очищена');
+      
       setOrderComplete(true);
-      setOrderNumber('');
+      setOrderNumber(orderNum);
     } catch (error: any) {
-      console.error('Ошибка при оформлении заказа:', error);
+      console.error('❌ Ошибка при оформлении заказа:', error);
       let msg = "Произошла ошибка при оформлении заказа. Пожалуйста, попробуйте еще раз.";
-      if (error?.response?.data) {
-        msg += `\n${JSON.stringify(error.response.data)}`;
+      if (error?.response?.data?.message) {
+        msg = error.response.data.message;
       } else if (error?.message) {
-        msg += `\n${error.message}`;
+        msg = error.message;
       }
       setOrderError(msg);
     } finally {
@@ -343,6 +384,40 @@ export default function Checkout() {
                     )}
                   </div>
 
+                  {/* Способ оплаты */}
+                  <div className="bg-white p-5 rounded-xl border border-pink-100 shadow-soft">
+                    <h3 className="text-lg font-medium mb-4 text-brand-primary">Способ оплаты</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          id="cash"
+                          value="cash"
+                          className="mr-2 accent-pink-500 h-4 w-4"
+                          {...register("paymentMethod")}
+                        />
+                        <label htmlFor="cash" className="text-gray-700">
+                          Наличными при получении
+                        </label>
+                      </div>
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          id="card"
+                          value="card"
+                          className="mr-2 accent-pink-500 h-4 w-4"
+                          {...register("paymentMethod")}
+                        />
+                        <label htmlFor="card" className="text-gray-700">
+                          Банковской картой
+                        </label>
+                      </div>
+                      {errors.paymentMethod && (
+                        <p className="mt-1 text-pink-500 text-sm">{errors.paymentMethod.message}</p>
+                      )}
+                    </div>
+                  </div>
+
                   {/* Комментарий */}
                   <div className="bg-white p-5 rounded-xl border border-pink-100 shadow-soft">
                     <label htmlFor="comment" className="block text-gray-700 mb-2 font-medium">
@@ -467,6 +542,13 @@ export default function Checkout() {
                     <p className="text-brand-secondary text-sm">Способ доставки:</p>
                     <p className="font-medium text-gray-800">
                       {watch("deliveryMethod") === "pickup" ? "Самовывоз из магазина" : "Доставка"}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-white p-3 rounded-lg border border-pink-100">
+                    <p className="text-brand-secondary text-sm">Способ оплаты:</p>
+                    <p className="font-medium text-gray-800">
+                      {watch("paymentMethod") === "cash" ? "Наличными при получении" : "Банковской картой"}
                     </p>
                   </div>
                   

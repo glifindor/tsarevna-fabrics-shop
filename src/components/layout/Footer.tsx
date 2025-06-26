@@ -21,7 +21,7 @@ export default function Footer() {
         } else {
           setCatError(data.message || 'Ошибка при загрузке категорий');
         }
-      } catch (e) {
+      } catch {
         setCatError('Ошибка при загрузке категорий');
       } finally {
         setCatLoading(false);
@@ -151,7 +151,7 @@ export default function Footer() {
               <li className="flex items-start space-x-3">
                 <FiMapPin className="text-pink-500 mt-1" />
                 <span className="text-gray-600 text-sm">
-                  г. Москва, ул. Текстильщиков, 10, ТЦ "Мануфактура"
+                  г. Москва, ул. Текстильщиков, 10, ТЦ &ldquo;Мануфактура&rdquo;
                 </span>
               </li>
             </ul>
@@ -159,7 +159,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-pink-200 mt-8 pt-6 text-center text-gray-500 text-sm">
-          <p>© {currentYear} Царевна Швеяна. Все права защищены.</p>
+          <p>© {currentYear} &ldquo;Царевна Швеяна&rdquo;. Все права защищены.</p>
         </div>
       </div>
       

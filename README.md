@@ -1,36 +1,149 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Царевна Ткани - Интернет-магазин тканей
 
-## Getting Started
+Современный интернет-магазин тканей, построенный на Next.js 15 с использованием TypeScript, MongoDB и Tailwind CSS.
 
-First, run the development server:
+## 🚀 Особенности
+
+- **Полнофункциональный e-commerce**: Каталог товаров, корзина, избранное, оформление заказов
+- **Админ-панель**: Управление товарами, заказами, пользователями и статистикой
+- **Аутентификация**: Система входа/регистрации с ролями пользователей
+- **Адаптивный дизайн**: Полная поддержка мобильных устройств
+- **Безопасность**: Защищенные API routes, валидация данных
+- **Современный стек**: Next.js 15, TypeScript, MongoDB, Tailwind CSS
+
+## 📋 Требования
+
+- Node.js 18.0 или выше
+- MongoDB 5.0 или выше
+- npm, yarn или pnpm
+
+## 🛠 Установка и запуск
+
+### 1. Клонирование репозитория
+
+```bash
+git clone <repository-url>
+cd tsarevna-fabrics-shop/website
+```
+
+### 2. Установка зависимостей
+
+```bash
+npm install
+# или
+yarn install
+# или
+pnpm install
+```
+
+### 3. Настройка переменных окружения
+
+Создайте файл `.env.local` в корне проекта:
+
+```bash
+# База данных
+MONGODB_URI=mongodb://localhost:27017/tsarevna-fabrics
+
+# JWT секрет (сгенерируйте уникальный ключ)
+JWT_SECRET=your-super-secure-jwt-secret-32-chars-minimum
+
+# NextAuth конфигурация
+NEXTAUTH_SECRET=your-nextauth-secret-here
+NEXTAUTH_URL=http://localhost:3000
+
+# Telegram для уведомлений (опционально)
+TELEGRAM_BOT_TOKEN=your-telegram-bot-token
+TELEGRAM_ADMIN_CHAT_ID=your-telegram-chat-id
+```
+
+### 4. Инициализация базы данных
+
+```bash
+# Заполнение тестовыми данными
+npm run seed
+```
+
+### 5. Запуск в режиме разработки
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Откройте [http://localhost:3000](http://localhost:3000) в браузере.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Структура проекта
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/                    # App Router страницы
+│   ├── admin/             # Админ-панель
+│   ├── api/               # API routes
+│   ├── catalog/           # Каталог товаров
+│   ├── cart/              # Корзина
+│   ├── checkout/          # Оформление заказа
+│   └── ...
+├── components/            # React компоненты
+│   ├── layout/           # Layout компоненты
+│   └── ui/               # UI компоненты
+├── context/              # React контексты
+├── lib/                  # Утилиты и библиотеки
+├── models/               # Mongoose модели
+└── types/                # TypeScript типы
+```
 
-## Learn More
+## 🔐 Безопасность
 
-To learn more about Next.js, take a look at the following resources:
+Перед деплоем в продакшн обязательно:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Установите уникальные секретные ключи
+2. Настройте HTTPS
+3. Ограничьте доступ к административным функциям
+4. Просмотрите файл [SECURITY.md](./SECURITY.md)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🔧 Доступные команды
 
-## Deploy on Vercel
+```bash
+npm run dev          # Запуск в режиме разработки
+npm run build        # Сборка для продакшена
+npm run start        # Запуск продакшн сборки
+npm run lint         # Проверка кода линтером
+npm run seed         # Заполнение БД тестовыми данными
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 👤 Тестовые аккаунты
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+После выполнения `npm run seed`:
+
+**Администратор:**
+- Email: admin@tsarevna.ru
+- Пароль: admin123
+
+**Обычный пользователь:**
+- Email: user@tsarevna.ru
+- Пароль: user123
+
+## 🚀 Деплой
+
+### Vercel (рекомендуется)
+
+1. Подключите репозиторий к Vercel
+2. Добавьте переменные окружения в настройках проекта
+3. Деплой произойдет автоматически
+
+### Другие платформы
+
+1. Выполните `npm run build`
+2. Загрузите содержимое папки `.next` на сервер
+3. Настройте переменные окружения
+4. Запустите `npm start`
+
+## 🤝 Участие в разработке
+
+1. Форкните репозиторий
+2. Создайте ветку для новой функции
+3. Внесите изменения
+4. Создайте Pull Request
+
+## 📄 Лицензия
+
+Этот проект распространяется под лицензией MIT.

@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import dbConnect from '@/lib/db';
 import Cart from '@/models/Cart';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 
 // Удаление товара из корзины
+import { logger } from '@/lib/logger';
+
 export async function POST(req: NextRequest) {
-  console.log('POST запрос к /api/cart/remove получен');
+  logger.log('POST запрос к /api/cart/remove получен');
   try {
     const session = await getServerSession(authOptions);
     

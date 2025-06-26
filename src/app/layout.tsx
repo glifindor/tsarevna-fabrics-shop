@@ -4,9 +4,12 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { SessionProvider } from "@/components/SessionProvider";
 import { CartProvider } from "@/context/CartContext";
+
+import { NotificationProvider } from "@/context/NotificationContext";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,9 +32,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let session = null;
   try {
-    session = await getServerSession(authOptions);
+    await getServerSession(authOptions);
   } catch (error) {
     console.error('Ошибка при получении сессии:', error);
   }
@@ -41,13 +43,17 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <SessionProvider>
-          <CartProvider>
-            <Header />
-            <main className="flex-grow">{children}</main>
-            <Footer />
-          </CartProvider>
-        </SessionProvider>
+        <ErrorBoundary>
+          <SessionProvider>
+            <NotificationProvider>
+              <CartProvider>
+                <Header />
+                <main className="flex-grow">{children}</main>
+                <Footer />
+              </CartProvider>
+            </NotificationProvider>
+          </SessionProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
