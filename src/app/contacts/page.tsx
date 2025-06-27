@@ -22,6 +22,7 @@ type ContactFormData = z.infer<typeof contactSchema>;
 
 export default function Contacts() {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   
   // Инициализация формы с валидацией
   const { 
@@ -34,15 +35,30 @@ export default function Contacts() {
   });
   
   // Обработка отправки формы
-  const onSubmit = (data: ContactFormData) => {
-    // Здесь будет логика отправки формы на сервер
-    console.log(data);
-    
-    // Имитация отправки
-    setTimeout(() => {
-      setIsSubmitted(true);
-      reset();
-    }, 1000);
+  const onSubmit = async (data: ContactFormData) => {
+    try {
+      setSubmitError(null);
+      
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setIsSubmitted(true);
+        reset();
+      } else {
+        setSubmitError(result.message || 'Произошла ошибка при отправке сообщения');
+      }
+    } catch (error) {
+      console.error('Ошибка отправки формы:', error);
+      setSubmitError('Произошла ошибка при отправке сообщения. Попробуйте еще раз.');
+    }
   };
 
   return (
@@ -156,7 +172,10 @@ export default function Contacts() {
                   Спасибо за ваше обращение. Мы свяжемся с вами в ближайшее время.
                 </p>
                 <button 
-                  onClick={() => setIsSubmitted(false)}
+                  onClick={() => {
+                    setIsSubmitted(false);
+                    setSubmitError(null);
+                  }}
                   className="bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 transition"
                 >
                   Отправить еще сообщение
@@ -164,6 +183,23 @@ export default function Contacts() {
               </div>
             ) : (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                {submitError && (
+                  <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                    <div className="flex">
+                      <div className="text-red-400">
+                        ❌
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-red-800">
+                          Ошибка отправки
+                        </h3>
+                        <div className="mt-2 text-sm text-red-700">
+                          {submitError}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div>
                   <label htmlFor="name" className="block text-gray-700 mb-1">
                     Ваше имя <span className="text-red-500">*</span>
