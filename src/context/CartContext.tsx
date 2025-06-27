@@ -58,29 +58,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (status === 'authenticated') {
       fetchCart();
     } else if (status === 'unauthenticated') {
-      // Для неавторизованных пользователей используем заглушку
-      const savedCart = localStorage.getItem('cart');
-      if (savedCart) {
-        try {
-          setCart(JSON.parse(savedCart));
-        } catch (error) {
-          // Если не удалось парсить, используем пустую корзину
-          console.error('Ошибка при парсинге корзины из localStorage:', error);
-          setCart({ items: [] });
-        }      } else {
-        // Если нет корзины в localStorage, используем пустую корзину
-        setCart({ items: [] });
-        localStorage.setItem('cart', JSON.stringify({ items: [] }));
-      }
+      // Для неавторизованных пользователей используем пустую корзину
+      setCart({ items: [] });
+      // Очищаем localStorage от старых данных корзины
+      localStorage.removeItem('cart');
     }
   }, [status]);
-  
-  // Сохраняем корзину в localStorage при изменении для неавторизованных пользователей
-  useEffect(() => {
-    if (status === 'unauthenticated' && cart.items.length > 0) {
-      localStorage.setItem('cart', JSON.stringify(cart));
-    }
-  }, [cart, status]);  // Получение корзины с сервера
+
+  // Получение корзины с сервера
   const fetchCart = async () => {
     if (status !== 'authenticated') return;
     
@@ -156,43 +141,53 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };  // Добавление товара в корзину
+  };
+
+  // Добавление товара в корзину
   const addItem = async (productId: string, quantity: number) => {
     if (!productId || typeof productId !== 'string' || productId.trim() === '') {
       setError('Некорректный ID товара. Добавление невозможно.');
       return;
     }
+
+    // Проверяем авторизацию пользователя
+    if (status !== 'authenticated') {
+      setError('Для добавления товаров в корзину необходимо войти в систему');
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
       
-      if (status === 'authenticated') {        // Отправляем запрос на сервер для авторизованных пользователей
-        console.log('Отправка запроса на добавление товара', { productId, quantity });
-        
-        // Убедимся, что productId - это строка
-        const productIdStr = productId.toString();
-        
-        // Добавляем дополнительные логи для отладки
-        console.log(`Тип productId: ${typeof productId}, значение: ${productId}`);
-        console.log(`Приведенное значение: ${productIdStr}`);
-        
-        // Сначала попробуем добавить через новый эндпоинт
-        let response = await apiClient.post('/cart/add', { 
+      // Отправляем запрос на сервер для авторизованных пользователей
+      console.log('Отправка запроса на добавление товара', { productId, quantity });
+      
+      // Убедимся, что productId - это строка
+      const productIdStr = productId.toString();
+      
+      // Добавляем дополнительные логи для отладки
+      console.log(`Тип productId: ${typeof productId}, значение: ${productId}`);
+      console.log(`Приведенное значение: ${productIdStr}`);
+      
+      // Сначала попробуем добавить через новый эндпоинт
+      let response = await apiClient.post('/cart/add', { 
+        productId: productIdStr, 
+        quantity 
+      });
+      
+      // Если не получилось, попробуем через стандартный эндпоинт
+      if (!response.success) {
+        console.log('Пробуем добавить через стандартный эндпоинт');
+        response = await apiClient.post('/cart', { 
           productId: productIdStr, 
           quantity 
         });
-        
-        // Если не получилось, попробуем через стандартный эндпоинт
-        if (!response.success) {
-          console.log('Пробуем добавить через стандартный эндпоинт');
-          response = await apiClient.post('/cart', { 
-            productId: productIdStr, 
-            quantity 
-          });
-        }
-        
-        console.log('Ответ сервера:', response);
-            if (response.success && response.data) {
+      }
+      
+      console.log('Ответ сервера:', response);
+      
+      if (response.success && response.data) {
         // Преобразуем данные корзины для правильного отображения
         const cartData = response.data;
         console.log('Данные корзины с сервера:', cartData);
@@ -251,33 +246,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setError(response.message || 'Не удалось добавить товар в корзину');
         console.error('Ошибка при добавлении товара в корзину:', response);
       }
-      } else {
-        // Для неавторизованных пользователей обновляем локальную корзину
-        const existingItemIndex = cart.items.findIndex(item => item.productId === productId);
-        
-        if (existingItemIndex > -1) {
-          // Обновляем количество существующего товара
-          const updatedItems = [...cart.items];
-          updatedItems[existingItemIndex].quantity = quantity;
-          setCart({ ...cart, items: updatedItems });
-        } else {
-          // Добавляем новый товар
-          // Здесь нам нужно запросить информацию о товаре
-          // В реальном приложении это будет API запрос
-          // Для демонстрации добавим заглушку
-          const newItem: CartItem = {
-            productId,
-            quantity,
-            name: "Новый товар",
-            price: 1000,
-            image: "/default-product.jpg",
-            slug: `product-${productId}`,
-            stock: 100
-          };
-          
-          setCart({ ...cart, items: [...cart.items, newItem] });
-        }
-      }
     } catch (error) {
       setError('Ошибка при добавлении товара в корзину');
       console.error('Ошибка при добавлении товара в корзину:', error);
@@ -288,74 +256,71 @@ export function CartProvider({ children }: { children: ReactNode }) {
   
   // Обновление количества товара в корзине
   const updateItem = async (productId: string, quantity: number) => {
+    // Проверяем авторизацию пользователя
+    if (status !== 'authenticated') {
+      setError('Для изменения корзины необходимо войти в систему');
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
       
-      if (status === 'authenticated') {
-        // Отправляем запрос на сервер для авторизованных пользователей
-        const response = await apiClient.post('/cart', { productId, quantity });
-        
-        if (response.success && response.data) {
-          // Форматируем данные корзины, как в fetchCart
-          const cartData = response.data;
-          const formattedCart = {
-            ...cartData,
-            items: cartData.items
-              .filter((item: any) => {
-                let pid = item.productId;
-                if (pid && typeof pid === 'object' && pid._id) pid = pid._id;
-                return pid && typeof pid === 'string' && pid.trim() !== '';
-              })
-              .map((item: any) => {
-                let pid = item.productId;
-                if (pid && typeof pid === 'object' && pid._id) pid = pid._id;
-                const productIdStr = String(pid);
-                if (item.productId && typeof item.productId === 'object') {
-                  // populate
-                  return {
-                    productId: productIdStr,
-                    quantity: item.quantity,
-                    name: item.productId.name || '',
-                    price: item.productId.price || 0,
-                    image: item.productId.images && item.productId.images.length > 0 ? item.productId.images[0] : '',
-                    slug: item.productId.slug ? String(item.productId.slug) : (item.productId.articleNumber ? String(item.productId.articleNumber) : ''),
-                    stock: item.productId.stock || 0,
-                    articleNumber: item.productId.articleNumber || '',
-                    description: item.productId.description || '',
-                    composition: item.productId.composition || '',
-                    category: item.productId.category || '',
-                    images: item.productId.images || [],
-                  };
-                }
-                // обычный формат
+      // Отправляем запрос на сервер для авторизованных пользователей
+      const response = await apiClient.post('/cart', { productId, quantity });
+      
+      if (response.success && response.data) {
+        // Форматируем данные корзины, как в fetchCart
+        const cartData = response.data;
+        const formattedCart = {
+          ...cartData,
+          items: cartData.items
+            .filter((item: any) => {
+              let pid = item.productId;
+              if (pid && typeof pid === 'object' && pid._id) pid = pid._id;
+              return pid && typeof pid === 'string' && pid.trim() !== '';
+            })
+            .map((item: any) => {
+              let pid = item.productId;
+              if (pid && typeof pid === 'object' && pid._id) pid = pid._id;
+              const productIdStr = String(pid);
+              if (item.productId && typeof item.productId === 'object') {
+                // populate
                 return {
                   productId: productIdStr,
                   quantity: item.quantity,
-                  name: item.name || '',
-                  price: item.price || 0,
-                  image: item.image || '',
-                  slug: item.slug ? String(item.slug) : '',
-                  stock: item.stock || 0,
-                  articleNumber: item.articleNumber || '',
-                  description: item.description || '',
-                  composition: item.composition || '',
-                  category: item.category || '',
-                  images: item.images || [],
+                  name: item.productId.name || '',
+                  price: item.productId.price || 0,
+                  image: item.productId.images && item.productId.images.length > 0 ? item.productId.images[0] : '',
+                  slug: item.productId.slug ? String(item.productId.slug) : (item.productId.articleNumber ? String(item.productId.articleNumber) : ''),
+                  stock: item.productId.stock || 0,
+                  articleNumber: item.productId.articleNumber || '',
+                  description: item.productId.description || '',
+                  composition: item.productId.composition || '',
+                  category: item.productId.category || '',
+                  images: item.productId.images || [],
                 };
-              })
-          };
-          setCart(formattedCart);
-        } else {
-          setError(response.message || 'Не удалось обновить товар в корзине');
-        }
+              }
+              // обычный формат
+              return {
+                productId: productIdStr,
+                quantity: item.quantity,
+                name: item.name || '',
+                price: item.price || 0,
+                image: item.image || '',
+                slug: item.slug ? String(item.slug) : '',
+                stock: item.stock || 0,
+                articleNumber: item.articleNumber || '',
+                description: item.description || '',
+                composition: item.composition || '',
+                category: item.category || '',
+                images: item.images || [],
+              };
+            })
+        };
+        setCart(formattedCart);
       } else {
-        // Для неавторизованных пользователей обновляем локальную корзину
-        const updatedItems = cart.items.map(item => 
-          item.productId === productId ? { ...item, quantity } : item
-        );
-        
-        setCart({ ...cart, items: updatedItems });
+        setError(response.message || 'Не удалось обновить товар в корзине');
       }
     } catch (error) {
       setError('Ошибка при обновлении количества товара');
@@ -364,79 +329,81 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     }
   };
-    // Удаление товара из корзины
+
+  // Удаление товара из корзины
   const removeItem = async (productId: string) => {
     if (!productId || typeof productId !== 'string' || productId.trim() === '') {
       setError('Некорректный ID товара. Удаление невозможно.');
       return;
     }
+
+    // Проверяем авторизацию пользователя
+    if (status !== 'authenticated') {
+      setError('Для изменения корзины необходимо войти в систему');
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
       
-      if (status === 'authenticated') {
-        // Для авторизованных пользователей удаляем товар через API
-        console.log('Отправка запроса на удаление товара из корзины', { productId });
-        
-        // Вызываем новый эндпоинт для удаления товара
-        const response = await apiClient.post('/cart/remove', { productId });
-        
-        if (response.success && response.data) {
-          const formattedCart = {
-            ...response.data,
-            items: response.data.items
-              .filter((item: any) => {
-                let pid = item.productId;
-                if (pid && typeof pid === 'object' && pid._id) pid = pid._id;
-                return pid && typeof pid === 'string' && pid.trim() !== '';
-              })
-              .map((item: any) => {
-                let pid = item.productId;
-                if (pid && typeof pid === 'object' && pid._id) pid = pid._id;
-                const productIdStr = String(pid);
-                if (item.productId && typeof item.productId === 'object') {
-                  // populate
-                  return {
-                    productId: productIdStr,
-                    quantity: item.quantity,
-                    name: item.productId.name || '',
-                    price: item.productId.price || 0,
-                    image: item.productId.images && item.productId.images.length > 0 ? item.productId.images[0] : '',
-                    slug: item.productId.slug ? String(item.productId.slug) : (item.productId.articleNumber ? String(item.productId.articleNumber) : ''),
-                    stock: item.productId.stock || 0,
-                    articleNumber: item.productId.articleNumber || '',
-                    description: item.productId.description || '',
-                    composition: item.productId.composition || '',
-                    category: item.productId.category || '',
-                    images: item.productId.images || [],
-                  };
-                }
-                // обычный формат
+      // Для авторизованных пользователей удаляем товар через API
+      console.log('Отправка запроса на удаление товара из корзины', { productId });
+      
+      // Вызываем новый эндпоинт для удаления товара
+      const response = await apiClient.post('/cart/remove', { productId });
+      
+      if (response.success && response.data) {
+        const formattedCart = {
+          ...response.data,
+          items: response.data.items
+            .filter((item: any) => {
+              let pid = item.productId;
+              if (pid && typeof pid === 'object' && pid._id) pid = pid._id;
+              return pid && typeof pid === 'string' && pid.trim() !== '';
+            })
+            .map((item: any) => {
+              let pid = item.productId;
+              if (pid && typeof pid === 'object' && pid._id) pid = pid._id;
+              const productIdStr = String(pid);
+              if (item.productId && typeof item.productId === 'object') {
+                // populate
                 return {
                   productId: productIdStr,
                   quantity: item.quantity,
-                  name: item.name || '',
-                  price: item.price || 0,
-                  image: item.image || '',
-                  slug: item.slug ? String(item.slug) : '',
-                  stock: item.stock || 0,
-                  articleNumber: item.articleNumber || '',
-                  description: item.description || '',
-                  composition: item.composition || '',
+                  name: item.productId.name || '',
+                  price: item.productId.price || 0,
+                  image: item.productId.images && item.productId.images.length > 0 ? item.productId.images[0] : '',
+                  slug: item.productId.slug ? String(item.productId.slug) : (item.productId.articleNumber ? String(item.productId.articleNumber) : ''),
+                  stock: item.productId.stock || 0,
+                  articleNumber: item.productId.articleNumber || '',
+                  description: item.productId.description || '',
+                  composition: item.productId.composition || '',
                   category: item.category || '',
                   images: item.images || [],
                 };
-              })
-          };
-          
-          setCart(formattedCart);
-        } else {
-          setError(response.message || 'Не удалось удалить товар из корзины');
-        }
+              }
+              // обычный формат
+              return {
+                productId: productIdStr,
+                quantity: item.quantity,
+                name: item.name || '',
+                price: item.price || 0,
+                image: item.image || '',
+                slug: item.slug ? String(item.slug) : '',
+                stock: item.stock || 0,
+                articleNumber: item.articleNumber || '',
+                description: item.description || '',
+                composition: item.composition || '',
+                category: item.category || '',
+                images: item.images || [],
+              };
+            })
+        };
+        
+        setCart(formattedCart);
       } else {
-        // Для неавторизованных пользователей обновляем локальную корзину
-        const updatedItems = cart.items.filter(item => item.productId !== productId);
-        setCart({ ...cart, items: updatedItems });
+        setError(response.message || 'Не удалось удалить товар из корзины');
       }
     } catch (error) {
       setError('Ошибка при удалении товара из корзины');

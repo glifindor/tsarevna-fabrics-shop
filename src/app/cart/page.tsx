@@ -4,15 +4,65 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { FiMinus, FiPlus, FiTrash2, FiArrowLeft, FiShoppingBag, FiAlertTriangle } from 'react-icons/fi';
+import { useSession } from 'next-auth/react';
+import { FiMinus, FiPlus, FiTrash2, FiArrowLeft, FiShoppingBag, FiAlertTriangle, FiUser, FiLock } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
 import { getImageUrl } from '@/lib/imageUtils';
 import { useCart } from '@/context/CartContext';
 
 export default function Cart() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const { cart, isLoading, error, updateItem, removeItem, totalAmount } = useCart();
   const [processingCheckout, setProcessingCheckout] = useState(false);
+
+  // Если пользователь не авторизован, показываем экран входа
+  if (status === 'loading') {
+    return (
+      <div className="container mx-auto px-4 py-8 lg:py-16 text-center">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <div className="container mx-auto px-4 py-8 lg:py-16 text-center">
+        <FiLock className="mx-auto text-pink-300 mb-4" size={48} />
+        <h1 className="page-title text-xl lg:text-2xl font-bold mb-4">Вход в личный кабинет</h1>
+        <p className="text-gray-600 mb-6 lg:mb-8 text-sm lg:text-base">
+          Для просмотра корзины и совершения покупок необходимо войти в систему или зарегистрироваться.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+          <Link 
+            href="/login"
+            className="btn btn-inline px-6 py-3 rounded-full font-medium mobile-full-width flex items-center justify-center"
+          >
+            <FiUser className="mr-2" />
+            Войти в систему
+          </Link>
+          <Link 
+            href="/register"
+            className="btn-secondary px-6 py-3 rounded-full font-medium mobile-full-width flex items-center justify-center"
+          >
+            Зарегистрироваться
+          </Link>
+        </div>
+        <div className="mt-6">
+          <Link
+            href="/catalog"
+            className="inline-flex items-center text-pink-600 hover:text-pink-700 transition text-sm lg:text-base touch-target"
+          >
+            <FiArrowLeft className="mr-2" />
+            Вернуться в каталог
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   // Изменение количества товара
   const handleUpdateQuantity = (productId: string, newQuantity: number) => {

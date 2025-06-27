@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { FiMinus, FiPlus, FiShoppingCart } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
 import { useCart } from '@/context/CartContext';
@@ -47,9 +47,9 @@ interface Product {
 
 export default function ProductPage() {
   const params = useParams();
-
+  const router = useRouter();
   const slug = params.slug as string;
-    const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +63,7 @@ export default function ProductPage() {
   }>({ show: false, message: '', type: 'info' });
   const [addingSimilarProductId, setAddingSimilarProductId] = useState<string | null>(null);
   const { addItem } = useCart();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [showEdit, setShowEdit] = useState(false);
   interface Category {
     _id: string;
@@ -155,6 +155,21 @@ export default function ProductPage() {
     try {
       if (!product) return;
       
+      // Проверяем авторизацию
+      if (status !== 'authenticated') {
+        setNotification({
+          show: true,
+          message: 'Для добавления товаров в корзину необходимо войти в систему',
+          type: 'warning'
+        });
+        
+        setTimeout(() => {
+          setNotification(prev => ({ ...prev, show: false }));
+          router.push('/login');
+        }, 2000);
+        return;
+      }
+      
       // Вызываем функцию из контекста корзины для добавления товара
       console.log('Добавление товара в корзину:', { 
         id: product._id, 
@@ -196,6 +211,21 @@ export default function ProductPage() {
   // Обработчик для добавления похожего товара в корзину
   const addSimilarProductToCart = async (product: Product) => {
     try {
+      // Проверяем авторизацию
+      if (status !== 'authenticated') {
+        setNotification({
+          show: true,
+          message: 'Для добавления товаров в корзину необходимо войти в систему',
+          type: 'warning'
+        });
+        
+        setTimeout(() => {
+          setNotification(prev => ({ ...prev, show: false }));
+          router.push('/login');
+        }, 2000);
+        return;
+      }
+
       setAddingSimilarProductId(product._id);
       
       // Предпочтительно используем артикул товара для поиска в БД

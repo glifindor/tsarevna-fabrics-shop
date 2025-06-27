@@ -4,6 +4,7 @@ import React, { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { FiFilter, FiX, FiSearch, FiShoppingCart } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
 import apiClient from '@/lib/apiClient';
@@ -29,6 +30,7 @@ interface Product {
 const CatalogContent: React.FC = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { data: session, status } = useSession();
   const searchQuery = searchParams.get('search') || '';
   const categoryParam = searchParams.get('category') || 'all';
   const { addItem, isLoading: isCartLoading } = useCart();
@@ -183,6 +185,21 @@ const CatalogContent: React.FC = () => {
   
   // Добавление товара в корзину
   const handleAddToCart = async (product: Product) => {
+    // Проверяем авторизацию
+    if (status !== 'authenticated') {
+      setNotification({
+        show: true,
+        message: 'Для добавления товаров в корзину необходимо войти в систему',
+        type: 'warning'
+      });
+      
+      setTimeout(() => {
+        setNotification(prev => ({ ...prev, show: false }));
+        router.push('/login');
+      }, 2000);
+      return;
+    }
+
     try {
       setAddingToCart(product._id);
       await addItem(product._id, 0.1); // Добавляем 10см
