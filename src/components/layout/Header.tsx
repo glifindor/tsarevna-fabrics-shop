@@ -61,26 +61,26 @@ export default function Header() {
             <div className="ml-2 text-xs text-gray-500 italic">волшебные ткани для рукоделия</div>
           </Link>
 
+          {/* Навигация и иконки справа */}
+          <div className="flex items-center space-x-6">
+            {/* Десктопная навигация */}
+            <nav className="hidden md:flex items-center space-x-6">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`text-sm font-medium hover:text-pink-500 transition-colors relative group ${
+                    pathname === link.href ? 'text-pink-500' : 'text-gray-700'
+                  }`}
+                >
+                  {link.name}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-400 transition-all duration-300 group-hover:w-full"></span>
+                </Link>
+              ))}
+            </nav>
 
-
-          {/* Десктопная навигация */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-sm font-medium hover:text-pink-500 transition-colors relative group ${
-                  pathname === link.href ? 'text-pink-500' : 'text-gray-700'
-                }`}
-              >
-                {link.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-400 transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-            ))}
-          </nav>
-
-          {/* Иконки справа */}
-          <div className="flex items-center space-x-5">
+            {/* Иконки справа */}
+            <div className="flex items-center space-x-4">
             <Link href="/cart" className="text-gray-700 hover:text-pink-500 transition-colors relative">
               <FiShoppingCart size={22} />
               {/* Если есть товары в корзине, показываем счетчик */}
@@ -169,8 +169,9 @@ export default function Header() {
               onClick={toggleMenu}
               aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
             >
-              {isMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+              {isMenuOpen ? <FiX size={24} /> :               <FiMenu size={24} />}
             </button>
+            </div>
           </div>
         </div>
 

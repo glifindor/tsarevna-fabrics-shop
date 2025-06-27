@@ -97,7 +97,7 @@ export async function PUT(
     
     // Обновляем статус заказа
     if (body.status) {
-      if (!['pending', 'processing', 'shipped', 'delivered', 'cancelled'].includes(body.status)) {
+      if (!['pending', 'processing', 'shipped', 'delivered', 'canceled', 'deleted'].includes(body.status)) {
         return NextResponse.json(
           { success: false, message: 'Некорректный статус заказа' },
           { status: 400 }
