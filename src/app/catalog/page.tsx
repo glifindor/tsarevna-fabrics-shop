@@ -12,6 +12,7 @@ import { useCart } from '@/context/CartContext';
 import Notification from '@/components/ui/Notification';
 import ProductImage from '@/components/ui/ProductImage';
 import { getFirstImage } from '@/lib/imageUtils';
+import { logger } from '@/lib/logger';
 
 // Интерфейс для продукта
 interface Product {
@@ -88,7 +89,7 @@ const CatalogContent: React.FC = () => {
           setError('Не удалось загрузить товары');
         }
       } catch (error) {
-        console.error('Ошибка при загрузке товаров:', error);
+        logger.error('Ошибка при загрузке товаров:', error);
         setError('Ошибка при загрузке товаров');
       } finally {
         setLoading(false);
@@ -216,7 +217,7 @@ const CatalogContent: React.FC = () => {
         setNotification(prev => ({ ...prev, show: false }));
       }, 3000);
     } catch (err) {
-      console.error('Ошибка при добавлении товара в корзину:', err);
+      logger.error('Ошибка при добавлении товара в корзину:', err);
       setAddingToCart(null);
       
       setNotification({

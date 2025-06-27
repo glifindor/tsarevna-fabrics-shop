@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { logger } from '@/lib/logger';
 
 interface ProductImageProps {
   src: string;
@@ -34,12 +35,12 @@ export default function ProductImage({
     setIsLoading(false);
     setHasError(true);
     
-    console.log(`Ошибка загрузки изображения (попытка ${errorCount + 1}):`, currentSrc);
+    logger.log(`Ошибка загрузки изображения (попытка ${errorCount + 1}):`, currentSrc);
     
     if (errorCount === 0) {
       // Первая ошибка - пробуем API route
       const apiUrl = getApiImageSrc(currentSrc);
-      console.log('Пробуем API route:', apiUrl);
+      logger.log('Пробуем API route:', apiUrl);
       setErrorCount(1);
       setCurrentSrc(apiUrl);
       setHasError(false);
@@ -47,14 +48,14 @@ export default function ProductImage({
     } else if (errorCount === 1) {
       // Вторая ошибка - пробуем другой API route
       const uploadsApiUrl = getUploadsApiSrc(currentSrc);
-      console.log('Пробуем uploads API route:', uploadsApiUrl);
+      logger.log('Пробуем uploads API route:', uploadsApiUrl);
       setErrorCount(2);
       setCurrentSrc(uploadsApiUrl);
       setHasError(false);
       setIsLoading(true);
     } else if (errorCount === 2 && currentSrc !== getNoImageFallback()) {
       // Третья ошибка - используем fallback
-      console.log('API routes не сработали, используем fallback:', getNoImageFallback());
+      logger.log('API routes не сработали, используем fallback:', getNoImageFallback());
       setErrorCount(3);
       setCurrentSrc(getNoImageFallback());
     }

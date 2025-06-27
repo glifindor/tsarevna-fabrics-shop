@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
 import apiClient from '@/lib/apiClient';
+import { logger } from '@/lib/logger';
 
 // Типы для элементов корзины
 export interface CartItem {
@@ -73,14 +74,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       setError(null);
       
-      console.log('Запрос корзины с сервера');
+      logger.log('Запрос корзины с сервера');
       const response = await apiClient.get('/cart');
-      console.log('Ответ сервера (GET /cart):', response);
+      logger.log('Ответ сервера (GET /cart):', response);
       
       if (response.success && response.data) {
         // Преобразование данных для правильного отображения
         const cartData = response.data;
-        console.log('Данные корзины с сервера:', cartData);
+        logger.log('Данные корзины с сервера:', cartData);
         
         const formattedCart = {
           ...cartData,
@@ -129,15 +130,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
             })
         };
         
-        console.log('Отформатированные данные корзины:', formattedCart);
+        logger.log('Отформатированные данные корзины:', formattedCart);
         setCart(formattedCart);
       } else {
         setError(response.message || 'Не удалось загрузить корзину');
-        console.error('Ошибка при загрузке корзины:', response);
+        logger.error('Ошибка при загрузке корзины:', response);
       }
     } catch (error) {
       setError('Ошибка при загрузке корзины');
-      console.error(error);
+      logger.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -161,14 +162,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setError(null);
       
       // Отправляем запрос на сервер для авторизованных пользователей
-      console.log('Отправка запроса на добавление товара', { productId, quantity });
+      logger.log('Отправка запроса на добавление товара', { productId, quantity });
       
       // Убедимся, что productId - это строка
       const productIdStr = productId.toString();
       
       // Добавляем дополнительные логи для отладки
-      console.log(`Тип productId: ${typeof productId}, значение: ${productId}`);
-      console.log(`Приведенное значение: ${productIdStr}`);
+      logger.log(`Тип productId: ${typeof productId}, значение: ${productId}`);
+      logger.log(`Приведенное значение: ${productIdStr}`);
       
       // Сначала попробуем добавить через новый эндпоинт
       let response = await apiClient.post('/cart/add', { 
@@ -178,19 +179,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
       
       // Если не получилось, попробуем через стандартный эндпоинт
       if (!response.success) {
-        console.log('Пробуем добавить через стандартный эндпоинт');
+        logger.log('Пробуем добавить через стандартный эндпоинт');
         response = await apiClient.post('/cart', { 
           productId: productIdStr, 
           quantity 
         });
       }
       
-      console.log('Ответ сервера:', response);
+      logger.log('Ответ сервера:', response);
       
       if (response.success && response.data) {
         // Преобразуем данные корзины для правильного отображения
         const cartData = response.data;
-        console.log('Данные корзины с сервера:', cartData);
+        logger.log('Данные корзины с сервера:', cartData);
         
         // Форматируем данные корзины для работы с ними
         const formattedCart = {
@@ -240,15 +241,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
             })
         };
         
-        console.log('Отформатированные данные корзины:', formattedCart);
+        logger.log('Отформатированные данные корзины:', formattedCart);
         setCart(formattedCart);
       } else {
         setError(response.message || 'Не удалось добавить товар в корзину');
-        console.error('Ошибка при добавлении товара в корзину:', response);
+        logger.error('Ошибка при добавлении товара в корзину:', response);
       }
     } catch (error) {
       setError('Ошибка при добавлении товара в корзину');
-      console.error('Ошибка при добавлении товара в корзину:', error);
+      logger.error('Ошибка при добавлении товара в корзину:', error);
     } finally {
       setIsLoading(false);
     }
@@ -324,7 +325,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       setError('Ошибка при обновлении количества товара');
-      console.error('Ошибка при обновлении количества товара:', error);
+      logger.error('Ошибка при обновлении количества товара:', error);
     } finally {
       setIsLoading(false);
     }
@@ -348,7 +349,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setError(null);
       
       // Для авторизованных пользователей удаляем товар через API
-      console.log('Отправка запроса на удаление товара из корзины', { productId });
+      logger.log('Отправка запроса на удаление товара из корзины', { productId });
       
       // Вызываем новый эндпоинт для удаления товара
       const response = await apiClient.post('/cart/remove', { productId });
@@ -407,7 +408,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       setError('Ошибка при удалении товара из корзины');
-      console.error('Ошибка при удалении товара из корзины:', error);
+      logger.error('Ошибка при удалении товара из корзины:', error);
     } finally {
       setIsLoading(false);
     }
@@ -431,7 +432,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           }
         } catch (error) {
           // Если сервер не отвечает, всё равно очищаем локально
-          console.error('Ошибка при очистке корзины на сервере:', error);
+          logger.error('Ошибка при очистке корзины на сервере:', error);
           setCart({ items: [] });
         }
       } else {
@@ -443,7 +444,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('cart');
     } catch (error) {
       // Не показываем ошибку пользователю, просто логируем
-      console.error('Ошибка при очистке корзины', error);
+      logger.error('Ошибка при очистке корзины', error);
     } finally {
       setIsLoading(false);
     }

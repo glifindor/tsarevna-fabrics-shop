@@ -1,22 +1,40 @@
-const isDevelopment = process.env.NODE_ENV === 'development';
+class Logger {
+  private isDevelopment: boolean;
 
-export const logger = {
-  log: (...args: unknown[]) => {
-    if (isDevelopment) {
+  constructor() {
+    this.isDevelopment = process.env.NODE_ENV === 'development';
+  }
+
+  log(...args: any[]) {
+    if (this.isDevelopment) {
       console.log(...args);
     }
-  },
-  error: (...args: unknown[]) => {
-    console.error(...args); // Ошибки всегда логируем
-  },
-  warn: (...args: unknown[]) => {
-    if (isDevelopment) {
+  }
+
+  error(...args: any[]) {
+    if (this.isDevelopment) {
+      console.error(...args);
+    }
+  }
+
+  warn(...args: any[]) {
+    if (this.isDevelopment) {
       console.warn(...args);
     }
-  },
-  info: (...args: unknown[]) => {
-    if (isDevelopment) {
+  }
+
+  info(...args: any[]) {
+    if (this.isDevelopment) {
       console.info(...args);
     }
   }
-}; 
+
+  debug(...args: any[]) {
+    if (this.isDevelopment) {
+      console.debug(...args);
+    }
+  }
+}
+
+export const logger = new Logger();
+export default logger; 

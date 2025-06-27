@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { logger } from '@/lib/logger';
 
 interface SimpleImageProps {
   src: string;
@@ -26,17 +27,17 @@ export default function SimpleImage({
   const [errorCount, setErrorCount] = useState(0);
 
   const handleError = () => {
-    console.log(`Ошибка загрузки изображения (попытка ${errorCount + 1}):`, currentSrc);
+    logger.log(`Ошибка загрузки изображения (попытка ${errorCount + 1}):`, currentSrc);
     
     if (errorCount === 0) {
       // Первая ошибка - пробуем API route
       const apiUrl = getApiImageSrc(src);
-      console.log('Пробуем API route:', apiUrl);
+      logger.log('Пробуем API route:', apiUrl);
       setErrorCount(1);
       setCurrentSrc(apiUrl);
     } else if (errorCount === 1 && currentSrc !== fallback) {
       // Вторая ошибка - используем fallback
-      console.log('API route не сработал, используем fallback:', fallback);
+      logger.log('API route не сработал, используем fallback:', fallback);
       setErrorCount(2);
       setCurrentSrc(fallback);
     }

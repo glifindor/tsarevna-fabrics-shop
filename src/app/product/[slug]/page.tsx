@@ -12,6 +12,7 @@ import { useSession } from 'next-auth/react';
 import ProductEditForm from '@/components/ProductEditForm';
 import ProductImage from '@/components/ui/ProductImage';
 import { getFirstImage, getImageUrl } from '@/lib/imageUtils';
+import { logger } from '@/lib/logger';
 
 // Получение похожих товаров из той же категории
 const getSimilarProducts = async (category: string, currentId: string) => {
@@ -80,40 +81,40 @@ export default function ProductPage() {
         setLoading(true);
         setError(null);
         
-        console.log(`🔍 Загрузка товара: ${slug}`);
-        console.log(`🔍 Полный URL запроса: /api/products/${slug}`);
+        logger.log(`🔍 Загрузка товара: ${slug}`);
+        logger.log(`🔍 Полный URL запроса: /api/products/${slug}`);
         
         // Основной запрос к API
         const response = await apiClient.get(`products/${slug}`);
         
-        console.log('📦 Ответ API:', response);
-        console.log('📦 Success:', response.success);
-        console.log('📦 Data:', response.data);
-        console.log('📦 Message:', response.message);
+        logger.log('📦 Ответ API:', response);
+        logger.log('📦 Success:', response.success);
+        logger.log('📦 Data:', response.data);
+        logger.log('📦 Message:', response.message);
         
         if (response.success && response.data) {
-          console.log(`✅ Товар найден: ${response.data.name}`);
+          logger.log(`✅ Товар найден: ${response.data.name}`);
           setProduct(response.data);
           
           // Загружаем похожие товары из той же категории
           try {
             const similar = await getSimilarProducts(response.data.category, response.data._id);
             setSimilarProducts(similar);
-            console.log(`🔗 Загружено ${similar.length} похожих товаров`);
+            logger.log(`🔗 Загружено ${similar.length} похожих товаров`);
           } catch (similarError) {
-            console.warn('⚠️ Ошибка при загрузке похожих товаров:', similarError);
+            logger.warn('⚠️ Ошибка при загрузке похожих товаров:', similarError);
             setSimilarProducts([]);
           }
           
           setError(null);
         } else {
-          console.log(`❌ Товар не найден в API: ${slug}`);
-          console.log('📝 Ответ сервера:', response);
+          logger.log(`❌ Товар не найден в API: ${slug}`);
+          logger.log('📝 Ответ сервера:', response);
           setError(response.message || 'Товар не найден');
           setProduct(null);
         }
       } catch (error) {
-        console.error('❌ Ошибка при загрузке товара:', error);
+        logger.error('❌ Ошибка при загрузке товара:', error);
         setError('Не удалось загрузить информацию о товаре. Проверьте подключение к интернету.');
         setProduct(null);
       } finally {
@@ -134,7 +135,7 @@ export default function ProductPage() {
         const data = await res.json();
         if (data.success) setCategories(data.data);
       } catch (error) {
-        console.error('Ошибка при загрузке категорий:', error);
+        logger.error('Ошибка при загрузке категорий:', error);
       }
     };
     fetchCategories();
@@ -171,7 +172,7 @@ export default function ProductPage() {
       }
       
       // Вызываем функцию из контекста корзины для добавления товара
-      console.log('Добавление товара в корзину:', { 
+      logger.log('Добавление товара в корзину:', { 
         id: product._id, 
         name: product.name, 
         articleNumber: product.articleNumber,
@@ -181,10 +182,10 @@ export default function ProductPage() {
       // Предпочтительно используем артикул товара для поиска в БД
       const productIdentifier = product.articleNumber || product._id;
       
-      console.log('Идентификатор товара для добавления в корзину:', productIdentifier);
+      logger.log('Идентификатор товара для добавления в корзину:', productIdentifier);
       await addItem(productIdentifier, quantity);
       
-      console.log(`Добавлено в корзину: ${product.name}, количество: ${quantity}`);
+      logger.log(`Добавлено в корзину: ${product.name}, количество: ${quantity}`);
       
       // Показываем уведомление об успешном добавлении
       setNotification({
@@ -197,7 +198,7 @@ export default function ProductPage() {
         setNotification(prev => ({ ...prev, show: false }));
       }, 3000);
     } catch (error) {
-      console.error('Ошибка при добавлении товара в корзину:', error);
+      logger.error('Ошибка при добавлении товара в корзину:', error);
       
       setNotification({
         show: true,
@@ -244,7 +245,7 @@ export default function ProductPage() {
         setNotification(prev => ({ ...prev, show: false }));
       }, 2000);
     } catch (error) {
-      console.error('Ошибка при добавлении товара в корзину:', error);
+      logger.error('Ошибка при добавлении товара в корзину:', error);
       
       setNotification({
         show: true,

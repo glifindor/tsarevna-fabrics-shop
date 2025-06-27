@@ -9,6 +9,7 @@ import { SiVk } from 'react-icons/si';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { logger } from '@/lib/logger';
 
 // Схема валидации для формы обратной связи
 const contactSchema = z.object({
@@ -56,7 +57,7 @@ export default function Contacts() {
         setSubmitError(result.message || 'Произошла ошибка при отправке сообщения');
       }
     } catch (error) {
-      console.error('Ошибка отправки формы:', error);
+      logger.error('Ошибка отправки формы:', error);
       setSubmitError('Произошла ошибка при отправке сообщения. Попробуйте еще раз.');
     }
   };
