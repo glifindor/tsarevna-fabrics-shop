@@ -3,7 +3,7 @@
 import React, { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { FiFilter, FiX, FiSearch, FiShoppingCart } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
 import apiClient from '@/lib/apiClient';
@@ -28,6 +28,7 @@ interface Product {
 
 const CatalogContent: React.FC = () => {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const searchQuery = searchParams.get('search') || '';
   const categoryParam = searchParams.get('category') || 'all';
   const { addItem, isLoading: isCartLoading } = useCart();
@@ -147,6 +148,16 @@ const CatalogContent: React.FC = () => {
   // Обработчики событий
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
+  };
+
+  // Функция для полного сброса всех фильтров включая URL
+  const resetAllFilters = () => {
+    setSelectedCategory('all');
+    setPriceRange([0, 3000]);
+    setInStock(false);
+    setSearchTerm('');
+    // Очищаем URL от всех параметров
+    router.push('/catalog');
   };
 
   const handlePriceChange = (value: number, type: 'min' | 'max') => {
@@ -400,12 +411,7 @@ const CatalogContent: React.FC = () => {
             {(selectedCategory !== 'all' || priceRange[0] > 0 || priceRange[1] < 3000 || inStock || searchTerm) && (
               <button
                 className="ml-2 text-xs text-gray-500 underline hover:text-pink-600"
-                onClick={() => {
-                  setSelectedCategory('all');
-                  setPriceRange([0, 3000]);
-                  setInStock(false);
-                  setSearchTerm('');
-                }}
+                onClick={resetAllFilters}
               >Сбросить все</button>
             )}
           </div>
@@ -444,12 +450,7 @@ const CatalogContent: React.FC = () => {
                 Попробуйте изменить параметры фильтрации или поиска
               </p>
               <button
-                onClick={() => {
-                  setSelectedCategory('all');
-                  setPriceRange([0, 3000]);
-                  setInStock(false);
-                  setSearchTerm('');
-                }}
+                onClick={resetAllFilters}
                 className="btn-secondary px-4 py-2 rounded"
               >
                 Сбросить все фильтры
