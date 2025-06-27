@@ -46,8 +46,11 @@ export async function GET() {
 // Добавление товара в корзину
 export async function POST(req: NextRequest) {
   logger.log('POST запрос к /api/cart получен');
+  let body: any = {};
+  let session: any = null;
+  
   try {
-    const session = await getServerSession(authOptions);
+    session = await getServerSession(authOptions);
     
     if (!session || !session.user) {
       logger.log('POST /api/cart: Пользователь не авторизован');
@@ -60,7 +63,7 @@ export async function POST(req: NextRequest) {
     await dbConnect();
     
     const userId = session.user.id;
-    const body = await req.json();
+    body = await req.json();
     logger.log('POST /api/cart: Получены данные', { userId, body });
     
     // Проверка обязательных полей
@@ -73,9 +76,22 @@ export async function POST(req: NextRequest) {
     }
     
     // Проверка существования товара
-    const product = await Product.findById(body.productId);
-    logger.log('POST /api/cart: Поиск продукта', { productId: body.productId, found: !!product });
+    logger.log('POST /api/cart: Начинаем поиск продукта', { productId: body.productId, type: typeof body.productId });
+    
+    let product;
+    try {
+      product = await Product.findById(body.productId);
+      logger.log('POST /api/cart: Поиск продукта завершен', { productId: body.productId, found: !!product });
+    } catch (productError) {
+      logger.error('POST /api/cart: Ошибка при поиске продукта', { productId: body.productId, error: productError });
+      return NextResponse.json(
+        { success: false, message: 'Некорректный ID товара', error: productError },
+        { status: 400 }
+      );
+    }
+    
     if (!product) {
+      logger.log('POST /api/cart: Товар не найден в БД', { productId: body.productId });
       return NextResponse.json(
         { success: false, message: 'Товар не найден' },
         { status: 404 }
@@ -139,9 +155,17 @@ export async function POST(req: NextRequest) {
       data: updatedCart
     });
   } catch (error) {
-    logger.error('Ошибка при добавлении товара в корзину:', error);
+    logger.error('POST /api/cart: Критическая ошибка', { 
+      error: error instanceof Error ? {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      } : error,
+      body,
+      userId: session?.user?.id
+    });
     return NextResponse.json(
-      { success: false, message: 'Ошибка при добавлении товара в корзину', error },
+      { success: false, message: 'Ошибка при добавлении товара в корзину', error: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

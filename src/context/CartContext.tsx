@@ -267,6 +267,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       setError(null);
       
+      // Логируем что отправляем
+      logger.log('updateItem: Отправка запроса', { 
+        productId, 
+        quantity, 
+        productIdType: typeof productId,
+        productIdLength: productId?.length 
+      });
+      
       // Отправляем запрос на сервер для авторизованных пользователей
       const response = await apiClient.post('/cart', { productId, quantity });
       
