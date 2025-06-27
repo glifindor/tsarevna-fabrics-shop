@@ -70,9 +70,9 @@ export default function Cart() {
     
     if (!item) return;
     
-    // Проверка на наличие и минимальное значение (кратность 0.1м)
+    // Проверка на наличие и минимальное значение (кратность 0.1м, минимум 0.3м)
     const roundedQuantity = Math.round(newQuantity * 10) / 10;
-    if (roundedQuantity < 0.1 || (item.stock && roundedQuantity > item.stock)) return;
+    if (roundedQuantity < 0.3 || (item.stock && roundedQuantity > item.stock)) return;
     
     updateItem(productId, roundedQuantity);
   };
@@ -195,7 +195,7 @@ export default function Cart() {
                               <button
                                 onClick={() => handleUpdateQuantity(item.productId, item.quantity - 0.1)}
                                 className="flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-l border border-pink-200 bg-pink-50 text-gray-600 hover:bg-pink-100 transition touch-target"
-                                disabled={item.quantity <= 0.1 || isLoading}
+                                disabled={item.quantity <= 0.3 || isLoading}
                               >
                                 <FiMinus size={16} />
                               </button>

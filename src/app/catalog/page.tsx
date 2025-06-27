@@ -203,7 +203,7 @@ const CatalogContent: React.FC = () => {
 
     try {
       setAddingToCart(product._id);
-      await addItem(product._id, 0.1); // Добавляем 10см
+              await addItem(product._id, 0.3); // Добавляем 30см
       setAddingToCart(null);
       
       // Показываем уведомление об успешном добавлении

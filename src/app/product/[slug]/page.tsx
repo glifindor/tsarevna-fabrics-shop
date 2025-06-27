@@ -54,7 +54,7 @@ export default function ProductPage() {
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(0.1); // Начинаем с 10см
+  const [quantity, setQuantity] = useState(0.3); // Начинаем с 30см
   const [selectedImage, setSelectedImage] = useState(0);
 
   const [notification, setNotification] = useState<{
@@ -142,8 +142,8 @@ export default function ProductPage() {
   }, []);
 
   const decreaseQuantity = () => {
-    if (quantity > 0.1) {
-      setQuantity(Math.round((quantity - 0.1) * 10) / 10); // Уменьшаем на 10см с округлением
+          if (quantity > 0.3) {
+        setQuantity(Math.round((quantity - 0.1) * 10) / 10); // Уменьшаем на 10см с округлением
     }
   };
 
@@ -232,7 +232,7 @@ export default function ProductPage() {
       // Предпочтительно используем артикул товара для поиска в БД
       const productIdentifier = product.articleNumber || product._id;
       
-      await addItem(productIdentifier, 0.1); // Добавляем 10см
+              await addItem(productIdentifier, 0.3); // Добавляем 30см
       
       setNotification({
         show: true,
@@ -410,7 +410,7 @@ export default function ProductPage() {
                 <button
                   onClick={decreaseQuantity}
                   className="flex items-center justify-center w-10 h-10 rounded-l border border-pink-200 bg-pink-50 text-gray-600 hover:bg-pink-100 transition"
-                  disabled={quantity <= 0.1}
+                  disabled={quantity <= 0.3}
                 >
                   <FiMinus />
                 </button>
@@ -419,11 +419,11 @@ export default function ProductPage() {
                   step="0.1"
                   className="w-20 h-10 border-y border-pink-200 text-center text-gray-700 focus:outline-none"
                   value={quantity.toFixed(1)}
-                  min="0.1"
+                  min="0.3"
                   max={product.stock}
                   onChange={(e) => {
                     const val = parseFloat(e.target.value);
-                    if (!isNaN(val) && val >= 0.1 && val <= product.stock) {
+                                          if (!isNaN(val) && val >= 0.3 && val <= product.stock) {
                       setQuantity(Math.round(val * 10) / 10); // Округляем до 0.1
                     }
                   }}
