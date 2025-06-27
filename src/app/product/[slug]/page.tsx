@@ -10,7 +10,7 @@ import apiClient from '@/lib/apiClient';
 import Notification from '@/components/ui/Notification';
 import { useSession } from 'next-auth/react';
 import ProductEditForm from '@/components/ProductEditForm';
-import SimpleImage from '@/components/ui/SimpleImage';
+import ProductImage from '@/components/ui/ProductImage';
 import { getFirstImage, getImageUrl } from '@/lib/imageUtils';
 
 // Получение похожих товаров из той же категории
@@ -292,11 +292,10 @@ export default function ProductPage() {
         <div className="md:w-1/2 px-4 mb-8 md:mb-0">
           <div className="mb-4 bg-gray-100 rounded-lg overflow-hidden relative aspect-square">
             {product.images && product.images.length > 0 ? (
-              <SimpleImage 
+              <ProductImage 
                 src={getImageUrl(product.images[selectedImage], '/vercel.svg')} 
                 alt={product.name}
                 className="w-full h-full object-cover"
-                fallback="/vercel.svg"
               />
             ) : (
               <div className="absolute inset-0 bg-gray-200 flex items-center justify-center text-gray-400">
@@ -322,11 +321,10 @@ export default function ProductPage() {
                   }`}
                   onClick={() => setSelectedImage(index)}
                 >
-                  <SimpleImage 
+                  <ProductImage 
                     src={getImageUrl(image, '/vercel.svg')} 
                     alt={`${product.name} - изображение ${index + 1}`}
                     className="w-full h-full object-cover"
-                    fallback="/vercel.svg"
                   />
                 </button>
               ))
@@ -450,11 +448,10 @@ export default function ProductPage() {
                 <Link href={`/product/${product._id}`}>
                   <div className="h-48 bg-gray-200 relative">
                     {product.images && product.images.length > 0 ? (
-                      <SimpleImage 
+                      <ProductImage 
                         src={getFirstImage(product.images, '/vercel.svg')} 
                         alt={product.name}
                         className="w-full h-full object-cover"
-                        fallback="/vercel.svg"
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full text-gray-400">

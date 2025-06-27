@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FaCrown, FaRulerHorizontal, FaShippingFast, FaCreditCard, FaMagic } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { getImageUrl, getFirstImage } from '@/lib/imageUtils';
-import SimpleImage from '@/components/ui/SimpleImage';
+import ProductImage from '@/components/ui/ProductImage';
 
 interface Category {
   _id: string;
@@ -192,11 +192,10 @@ export default function Home() {
               >
                 <div className="bg-gray-100 rounded-lg overflow-hidden aspect-square relative hover-scale shadow-sm">
                   {category.image ? (
-                    <SimpleImage
+                    <ProductImage
                       src={getImageUrl(category.image, '/vercel.svg')}
                       alt={category.name}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                      fallback="/vercel.svg"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200 text-xs md:text-sm">Нет фото</div>
@@ -229,11 +228,10 @@ export default function Home() {
                 <Link href={`/product/${product._id}`}>
                   <div className="h-48 md:h-64 bg-gray-200 relative">
                     {product.images && product.images.length > 0 ? (
-                      <SimpleImage
+                      <ProductImage
                         src={getFirstImage(product.images, '/vercel.svg')}
                         alt={product.name}
                         className="w-full h-full object-cover"
-                        fallback="/vercel.svg"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200 text-xs md:text-sm">Нет фото</div>
