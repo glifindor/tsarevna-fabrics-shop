@@ -28,7 +28,7 @@ export default function About() {
           <span className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-pink-300 to-transparent"></span>
         </h2>
         <p className="text-gray-700 mb-6 leading-relaxed">
-          Компания &ldquo;Царевна Швеяна&rdquo; начала свою деятельность в 2018 году как небольшой семейный магазин тканей. 
+          Компания &ldquo;Царевна Швеяна&rdquo; начала свою деятельность в 2016 году как небольшой семейный магазин тканей. 
           За годы работы мы выросли в одного из ведущих поставщиков высококачественных тканей для рукоделия, 
           творчества и профессионального пошива.
         </p>
