@@ -10,6 +10,7 @@ import { CartProvider } from "@/context/CartContext";
 
 import { NotificationProvider } from "@/context/NotificationContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import SessionManager from "@/components/SessionManager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,6 +46,7 @@ export default async function RootLayout({
       >
         <ErrorBoundary>
           <SessionProvider>
+            <SessionManager />
             <NotificationProvider>
               <CartProvider>
                 <Header />
