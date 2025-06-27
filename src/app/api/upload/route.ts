@@ -69,10 +69,30 @@ export async function POST(request: NextRequest) {
 
     // Сохраняем файл
     console.log('POST /api/upload: Сохранение файла', { fileName, path: filePath });
+    console.log('POST /api/upload: Размер буфера:', buffer.length);
+    console.log('POST /api/upload: Рабочая директория:', process.cwd());
+    console.log('POST /api/upload: Папка uploads:', uploadsDir);
+    
     await writeFile(filePath, buffer);
+    
+    // Проверяем, что файл действительно создался
+    if (existsSync(filePath)) {
+      console.log('POST /api/upload: Файл успешно создан, размер:', require('fs').statSync(filePath).size);
+    } else {
+      console.error('POST /api/upload: ОШИБКА - файл не создался!');
+    }
     
     const fileUrl = `/uploads/${fileName}`;
     console.log('POST /api/upload: Файл успешно загружен', { url: fileUrl });
+    
+    // Дополнительная проверка - перечислим файлы в папке uploads
+    try {
+      const fs = require('fs');
+      const files = fs.readdirSync(uploadsDir);
+      console.log('POST /api/upload: Файлы в uploads после загрузки:', files);
+    } catch (e) {
+      console.log('POST /api/upload: Ошибка при чтении папки uploads:', e);
+    }
 
     return NextResponse.json({ 
       success: true, 

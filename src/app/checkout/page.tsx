@@ -21,7 +21,7 @@ const DELIVERY_COMPANIES = [
   'Курьер',
 ];
 
-// Новая схема валидации
+// Новая схема валидации (убрали способы оплаты из формы)
 const checkoutSchema = z.object({
   customerName: z.string().min(3, { message: "Имя должно содержать не менее 3 символов" }),
   phone: z.string().min(10, { message: "Пожалуйста, введите корректный номер телефона" }),
@@ -29,31 +29,35 @@ const checkoutSchema = z.object({
   deliveryMethod: z.enum(["pickup", "delivery"], {
     errorMap: () => ({ message: "Выберите способ доставки" })
   }),
-  paymentMethod: z.enum(["cash", "card"], {
-    errorMap: () => ({ message: "Выберите способ оплаты" })
-  }),
-  // Новые поля для доставки
-  recipientName: z.string().optional(),
-  recipientPhone: z.string().optional(),
-  recipientEmail: z.string().optional(),
+  // Поля для доставки - все в одном блоке
+  fullName: z.string().optional(),
+  fullPhone: z.string().optional(), 
+  fullEmail: z.string().optional(),
+  fullAddress: z.string().optional(),
   deliveryCompany: z.string().optional(),
-  address: z.string().optional(),
   comment: z.string().optional(),
   agreement: z.literal(true, {
     errorMap: () => ({ message: "Необходимо согласиться с условиями" })
   })
 }).refine(
   data => data.deliveryMethod !== "delivery" || (
-    data.address && data.address.length > 0 &&
-    data.recipientName && data.recipientName.length > 0 &&
-    data.recipientPhone && data.recipientPhone.length > 0 &&
+    data.fullAddress && data.fullAddress.length > 0 &&
+    data.fullName && data.fullName.length > 0 &&
+    data.fullPhone && data.fullPhone.length > 0 &&
     data.deliveryCompany && data.deliveryCompany.length > 0
   ),
   {
-    message: "Для доставки заполните все поля получателя, адрес и выберите транспортную компанию",
-    path: ["address"]
+    message: "Для доставки заполните все поля",
+    path: ["fullAddress"]
   }
 );
+
+// Отдельная схема для подтверждения с выбором оплаты
+const confirmationSchema = z.object({
+  paymentMethod: z.enum(["card"], {
+    errorMap: () => ({ message: "Выберите способ оплаты" })
+  })
+});
 
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
@@ -65,7 +69,8 @@ export default function Checkout() {
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [orderError, setOrderError] = useState("");
-  const [step, setStep] = useState<'form' | 'confirmation'>('form');
+  const [step, setStep] = useState<'form' | 'confirmation' | 'payment'>('form');
+  const [paymentMethod, setPaymentMethod] = useState<'card'>('card');
   
   // Состояния для сохранения данных о заказе ДО очистки корзины
   const [orderTotalAmount, setOrderTotalAmount] = useState(0);
@@ -89,7 +94,6 @@ export default function Checkout() {
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
       deliveryMethod: "pickup",
-      paymentMethod: "cash",
     }
   });
 
@@ -108,6 +112,11 @@ export default function Checkout() {
   const onSubmit = () => {
     setStep('confirmation');
   };
+
+  // Функция для перехода к оплате
+  const proceedToPayment = () => {
+    setStep('payment');
+  };
   // Функция для подтверждения и отправки заказа
   const confirmOrder = async () => {
     try {
@@ -122,10 +131,15 @@ export default function Checkout() {
         customerName: formData.customerName,
         phone: formData.phone,
         email: formData.email,
-        address: formData.address || '',
+        address: formData.fullAddress || '',
         deliveryMethod: formData.deliveryMethod,
-        paymentMethod: formData.paymentMethod,
-        comment: formData.comment || ''
+        paymentMethod: paymentMethod,
+        comment: formData.comment || '',
+        // Данные получателя для доставки
+        recipientName: formData.fullName || formData.customerName,
+        recipientPhone: formData.fullPhone || formData.phone,
+        recipientEmail: formData.fullEmail || formData.email,
+        deliveryCompany: formData.deliveryCompany || ''
       });
       
       if (!orderResponse.data.success) {
@@ -139,10 +153,10 @@ export default function Checkout() {
       let tgText = `🧵 Новый заказ #${orderNum}\n`;
       tgText += `Имя: ${formData.customerName}\nТелефон: ${formData.phone}\nEmail: ${formData.email}\n`;
       tgText += `Способ доставки: ${formData.deliveryMethod === 'pickup' ? 'Самовывоз' : 'Доставка'}\n`;
-      tgText += `Способ оплаты: ${formData.paymentMethod === 'cash' ? 'Наличными' : 'Картой'}\n`;
+      tgText += `Способ оплаты: Банковской картой (тестовый режим)\n`;
       if (formData.deliveryMethod === 'delivery') {
-        tgText += `Получатель: ${formData.recipientName}\nТелефон получателя: ${formData.recipientPhone}\nEmail получателя: ${formData.recipientEmail}\n`;
-        tgText += `ТК: ${formData.deliveryCompany}\nАдрес: ${formData.address}\n`;
+        tgText += `Получатель: ${formData.fullName || formData.customerName}\nТелефон получателя: ${formData.fullPhone || formData.phone}\nEmail получателя: ${formData.fullEmail || formData.email}\n`;
+        tgText += `ТК: ${formData.deliveryCompany}\nАдрес: ${formData.fullAddress}\n`;
       }
       tgText += `Комментарий: ${formData.comment || '-'}\n`;
       tgText += `Товары:\n`;
@@ -373,20 +387,23 @@ export default function Checkout() {
                     </div>
 
                     {deliveryMethod === "delivery" && (
-                      <div className="mt-4 space-y-4">
-                        <div>
-                          <label htmlFor="recipientName" className="block text-gray-700 mb-2 font-medium">ФИО получателя <span className="text-pink-500">*</span></label>
-                          <input type="text" id="recipientName" className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 ${errors.recipientName ? 'border-pink-500' : 'border-pink-200'} bg-pink-50/30`} placeholder="ФИО получателя" {...register("recipientName")} />
-                          {errors.recipientName && <p className="mt-1 text-pink-500 text-sm">{errors.recipientName.message}</p>}
+                      <div className="mt-4 space-y-4 bg-pink-50/50 p-4 rounded-xl border border-pink-200">
+                        <h4 className="font-medium text-brand-primary mb-3">Данные получателя и доставки:</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label htmlFor="fullName" className="block text-gray-700 mb-2 font-medium">ФИО получателя <span className="text-pink-500">*</span></label>
+                            <input type="text" id="fullName" className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 ${errors.fullName ? 'border-pink-500' : 'border-pink-200'} bg-pink-50/30`} placeholder="ФИО получателя" {...register("fullName")} />
+                            {errors.fullName && <p className="mt-1 text-pink-500 text-sm">{errors.fullName.message}</p>}
+                          </div>
+                          <div>
+                            <label htmlFor="fullPhone" className="block text-gray-700 mb-2 font-medium">Телефон получателя <span className="text-pink-500">*</span></label>
+                            <input type="tel" id="fullPhone" className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 ${errors.fullPhone ? 'border-pink-500' : 'border-pink-200'} bg-pink-50/30`} placeholder="Телефон получателя" {...register("fullPhone")} />
+                            {errors.fullPhone && <p className="mt-1 text-pink-500 text-sm">{errors.fullPhone.message}</p>}
+                          </div>
                         </div>
                         <div>
-                          <label htmlFor="recipientPhone" className="block text-gray-700 mb-2 font-medium">Телефон получателя <span className="text-pink-500">*</span></label>
-                          <input type="tel" id="recipientPhone" className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 ${errors.recipientPhone ? 'border-pink-500' : 'border-pink-200'} bg-pink-50/30`} placeholder="Телефон получателя" {...register("recipientPhone")} />
-                          {errors.recipientPhone && <p className="mt-1 text-pink-500 text-sm">{errors.recipientPhone.message}</p>}
-                        </div>
-                        <div>
-                          <label htmlFor="recipientEmail" className="block text-gray-700 mb-2 font-medium">Email получателя</label>
-                          <input type="email" id="recipientEmail" className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 ${errors.recipientEmail ? 'border-pink-500' : 'border-pink-200'} bg-pink-50/30`} placeholder="Email получателя (необязательно)" {...register("recipientEmail")} />
+                          <label htmlFor="fullEmail" className="block text-gray-700 mb-2 font-medium">Email получателя</label>
+                          <input type="email" id="fullEmail" className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 ${errors.fullEmail ? 'border-pink-500' : 'border-pink-200'} bg-pink-50/30`} placeholder="Email получателя (необязательно)" {...register("fullEmail")} />
                         </div>
                         <div>
                           <label htmlFor="deliveryCompany" className="block text-gray-700 mb-2 font-medium">Транспортная компания <span className="text-pink-500">*</span></label>
@@ -394,47 +411,15 @@ export default function Checkout() {
                           {errors.deliveryCompany && <p className="mt-1 text-pink-500 text-sm">{errors.deliveryCompany.message}</p>}
                         </div>
                         <div>
-                          <label htmlFor="address" className="block text-gray-700 mb-2 font-medium">Адрес доставки <span className="text-pink-500">*</span></label>
-                          <textarea id="address" rows={3} className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 ${errors.address ? 'border-pink-500' : 'border-pink-200'} bg-pink-50/30`} placeholder="Город, улица, дом, квартира, индекс" {...register("address")} ></textarea>
-                          {errors.address && <p className="mt-1 text-pink-500 text-sm">{errors.address.message}</p>}
+                          <label htmlFor="fullAddress" className="block text-gray-700 mb-2 font-medium">Адрес доставки <span className="text-pink-500">*</span></label>
+                          <textarea id="fullAddress" rows={3} className={`w-full p-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 ${errors.fullAddress ? 'border-pink-500' : 'border-pink-200'} bg-pink-50/30`} placeholder="Город, улица, дом, квартира, индекс" {...register("fullAddress")} ></textarea>
+                          {errors.fullAddress && <p className="mt-1 text-pink-500 text-sm">{errors.fullAddress.message}</p>}
                         </div>
                       </div>
                     )}
                   </div>
 
-                  {/* Способ оплаты */}
-                  <div className="bg-white p-5 rounded-xl border border-pink-100 shadow-soft">
-                    <h3 className="text-lg font-medium mb-4 text-brand-primary">Способ оплаты</h3>
-                    <div className="space-y-3">
-                      <div className="flex items-center">
-                        <input
-                          type="radio"
-                          id="cash"
-                          value="cash"
-                          className="mr-2 accent-pink-500 h-4 w-4"
-                          {...register("paymentMethod")}
-                        />
-                        <label htmlFor="cash" className="text-gray-700">
-                          Наличными при получении
-                        </label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          type="radio"
-                          id="card"
-                          value="card"
-                          className="mr-2 accent-pink-500 h-4 w-4"
-                          {...register("paymentMethod")}
-                        />
-                        <label htmlFor="card" className="text-gray-700">
-                          Банковской картой
-                        </label>
-                      </div>
-                      {errors.paymentMethod && (
-                        <p className="mt-1 text-pink-500 text-sm">{errors.paymentMethod.message}</p>
-                      )}
-                    </div>
-                  </div>
+
 
                   {/* Комментарий */}
                   <div className="bg-white p-5 rounded-xl border border-pink-100 shadow-soft">
@@ -520,7 +505,7 @@ export default function Checkout() {
             </div>
           </div>
         </div>
-      ) : (
+      ) : step === 'confirmation' ? (
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-xl shadow-soft overflow-hidden border border-pink-100 relative">
             <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-pink-300 via-pink-400 to-pink-300"></div>
@@ -563,17 +548,12 @@ export default function Checkout() {
                     </p>
                   </div>
                   
-                  <div className="bg-white p-3 rounded-lg border border-pink-100">
-                    <p className="text-brand-secondary text-sm">Способ оплаты:</p>
-                    <p className="font-medium text-gray-800">
-                      {watch("paymentMethod") === "cash" ? "Наличными при получении" : "Банковской картой"}
-                    </p>
-                  </div>
-                  
                   {watch("deliveryMethod") === "delivery" && (
                     <div className="bg-white p-3 rounded-lg border border-pink-100">
                       <p className="text-brand-secondary text-sm">Адрес доставки:</p>
-                      <p className="font-medium text-gray-800">{watch("address")}</p>
+                      <p className="font-medium text-gray-800">{watch("fullAddress")}</p>
+                      <p className="text-brand-secondary text-sm mt-2">Получатель:</p>
+                      <p className="font-medium text-gray-800">{watch("fullName") || watch("customerName")}</p>
                     </div>
                   )}
                 </div>
@@ -612,11 +592,80 @@ export default function Checkout() {
                   Вернуться к редактированию
                 </button>
                 <button
+                  onClick={proceedToPayment}
+                  className="w-full sm:w-auto bg-gradient-to-r from-pink-400 to-pink-500 text-white py-3 px-8 rounded-full font-medium hover:from-pink-500 hover:to-pink-600 transition shadow-soft hover:shadow-md"
+                >
+                  Подтвердить заказ
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-xl shadow-soft overflow-hidden border border-pink-100 relative">
+            <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-pink-300 via-pink-400 to-pink-300"></div>
+            <div className="p-4 border-b border-pink-100 bg-gradient-to-r from-pink-50 to-white">
+              <h2 className="text-xl font-semibold text-brand-primary">Оплата заказа</h2>
+            </div>
+            
+            <div className="p-6 bg-gradient-to-br from-white to-pink-50/30">
+              <div className="mb-6">
+                <h3 className="text-lg font-medium mb-4 text-brand-primary">Выберите способ оплаты</h3>
+                
+                {orderError && (
+                  <div className="p-4 mb-4 bg-pink-50 text-pink-700 rounded-xl border border-pink-200 flex items-start">
+                    <FiAlertTriangle className="mt-1 mr-2 flex-shrink-0" />
+                    <p>{orderError}</p>
+                  </div>
+                )}
+                
+                <div className="bg-pink-50/50 p-5 rounded-xl border border-pink-100 space-y-4">
+                  <div className="bg-white p-4 rounded-lg border border-pink-100">
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        id="card-payment"
+                        value="card"
+                        checked={paymentMethod === 'card'}
+                        onChange={(e) => setPaymentMethod(e.target.value as 'card')}
+                        className="mr-3 accent-pink-500 h-4 w-4"
+                      />
+                      <label htmlFor="card-payment" className="text-gray-700 font-medium">
+                        Банковской картой (тестовый режим)
+                      </label>
+                    </div>
+                    <p className="ml-7 text-sm text-gray-600 mt-2">
+                      Безопасная оплата через платежную систему. После подтверждения заказ будет обработан.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <h3 className="text-lg font-medium mb-4 text-brand-primary">Итого к оплате</h3>
+                <div className="bg-white p-4 rounded-xl border border-pink-100">
+                  <div className="flex justify-between font-bold text-lg">
+                    <span>Сумма заказа:</span>
+                    <span className="text-pink-500">{totalAmount.toLocaleString()} ₽</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row justify-between items-center mt-8">
+                <button
+                  onClick={() => setStep('confirmation')}
+                  className="inline-flex items-center text-pink-500 hover:text-pink-600 hover:underline font-medium mb-4 sm:mb-0"
+                >
+                  <FiArrowLeft className="mr-2" />
+                  Вернуться к подтверждению
+                </button>
+                <button
                   onClick={confirmOrder}
                   disabled={isSubmitting}
-                  className="w-full sm:w-auto bg-gradient-to-r from-pink-400 to-pink-500 text-white py-3 px-8 rounded-full font-medium hover:from-pink-500 hover:to-pink-600 transition shadow-soft hover:shadow-md disabled:from-gray-300 disabled:to-gray-400"
+                  className="w-full sm:w-auto bg-gradient-to-r from-green-400 to-green-500 text-white py-3 px-8 rounded-full font-medium hover:from-green-500 hover:to-green-600 transition shadow-soft hover:shadow-md disabled:from-gray-300 disabled:to-gray-400"
                 >
-                  {isSubmitting ? "Оформление..." : "Подтвердить заказ"}
+                  {isSubmitting ? "Обработка платежа..." : "💳 Оплатить"}
                 </button>
               </div>
             </div>

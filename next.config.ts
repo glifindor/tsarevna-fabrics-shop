@@ -29,7 +29,11 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=3600', // Кэш на 1 час
+            value: 'public, max-age=60', // Кэш только на 1 минуту для быстрого обновления
+          },
+          {
+            key: 'X-Accel-Expires',
+            value: '60',
           },
         ],
       },

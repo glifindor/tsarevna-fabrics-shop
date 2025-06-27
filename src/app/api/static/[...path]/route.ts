@@ -25,6 +25,24 @@ export async function GET(
     // Проверяем существование файла
     if (!existsSync(fullPath)) {
       console.log('File not found:', fullPath);
+      console.log('Requested path:', filePath);
+      console.log('Full path:', fullPath);
+      console.log('Working directory:', process.cwd());
+      
+      // Проверим, что есть в папке uploads
+      try {
+        const fs = require('fs');
+        const uploadsPath = join(process.cwd(), 'public', 'uploads');
+        if (existsSync(uploadsPath)) {
+          const files = fs.readdirSync(uploadsPath);
+          console.log('Files in uploads:', files);
+        } else {
+          console.log('Uploads directory does not exist');
+        }
+      } catch (e) {
+        console.log('Error reading uploads directory:', e);
+      }
+      
       return new NextResponse('File not found', { status: 404 });
     }
 

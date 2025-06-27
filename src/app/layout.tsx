@@ -26,6 +26,9 @@ export const metadata: Metadata = {
   title: "Царевна Ткани - Магазин высококачественных тканей",
   description: "Магазин тканей Царевна: широкий выбор качественных тканей для пошива одежды, штор и других изделий.",
   keywords: "ткани, магазин тканей, ткани для одежды, ткани для штор, купить ткань",
+  other: {
+    "color-scheme": "light",
+  },
 };
 
 export default async function RootLayout({
@@ -40,9 +43,21 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="ru">
+    <html lang="ru" style={{colorScheme: 'light'}}>
+      <head>
+        <meta name="color-scheme" content="light" />
+        <meta name="theme-color" content="#fff9fc" />
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            html { color-scheme: light !important; }
+            body { color-scheme: light !important; }
+            * { color-scheme: light !important; }
+          `
+        }} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        style={{colorScheme: 'light'}}
       >
         <ErrorBoundary>
           <SessionProvider>

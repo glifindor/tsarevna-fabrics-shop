@@ -30,13 +30,40 @@
   --border-radius: var(--radius);
 }
 
+/* Принудительная светлая тема для всего сайта */
+html {
+  color-scheme: light;
+}
+
+/* Отключаем темную тему полностью и принудительно используем светлую */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #200414;
-    --foreground: #ededed;
-    --primary: #F472B6;
-    --border: #611245;
-    --light-pink: #300b1e;
+    /* Принудительно сохраняем светлую тему даже в темном режиме */
+    --background: #fff9fc !important;
+    --foreground: #3f3f3f !important;
+    --primary: #EC4899 !important;
+    --primary-hover: #DB2777 !important;
+    --secondary: #F5a0B0 !important;
+    --accent: #F59E0B !important;
+    --accent-secondary: #FBBF24 !important;
+    --border: #ffd2e9 !important;
+    --light-pink: #FFF1F7 !important;
+    --success: #86EFAC !important;
+    --success-dark: #22c55e !important;
+    --error: #F87171 !important;
+    color-scheme: light !important;
+  }
+  
+  /* Принудительно белый фон для всех элементов */
+  * {
+    color-scheme: light !important;
+  }
+  
+  html,
+  body {
+    background: #fff9fc !important;
+    color: #3f3f3f !important;
+    color-scheme: light !important;
   }
 }
 
@@ -44,6 +71,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  color-scheme: light;
 }
 
 /* Общие стили для девичьего дизайна */
@@ -160,9 +188,10 @@ body {
   border-radius: var(--radius);
   overflow: hidden;
   transition: all 0.3s ease;
-  background-color: white;
+  background-color: white !important;
   box-shadow: var(--shadow);
   position: relative;
+  color-scheme: light !important;
 }
 
 .product-card:hover {
@@ -208,7 +237,9 @@ body {
   padding: 0.75rem 1rem;
   width: 100%;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: white !important;
+  color: #3f3f3f !important;
+  color-scheme: light !important;
 }
 
 .form-input:focus {
@@ -233,12 +264,14 @@ body {
 
 /* Контейнеры с оформлением */
 .decorated-container {
-  background-color: var(--light-pink);
+  background-color: var(--light-pink) !important;
   border-radius: var(--radius);
   border: 1px solid var(--border);
   padding: 1.5rem;
   position: relative;
   overflow: hidden;
+  color: #3f3f3f !important;
+  color-scheme: light !important;
 }
 
 .decorated-container::before {
@@ -603,5 +636,191 @@ body {
   
   .safe-area-inset-top {
     padding-top: max(1rem, env(safe-area-inset-top));
+  }
+}
+
+/* ========================================
+   ПРИНУДИТЕЛЬНАЯ СВЕТЛАЯ ТЕМА
+   ======================================== */
+
+/* Глобальное принуждение к светлой теме для всех элементов */
+*,
+*::before,
+*::after {
+  color-scheme: light !important;
+}
+
+/* Принудительные стили для всех основных элементов */
+html,
+body,
+div,
+main,
+section,
+article,
+aside,
+nav,
+header,
+footer {
+  background-color: inherit !important;
+  color-scheme: light !important;
+}
+
+/* Формы и инпуты */
+input,
+textarea,
+select,
+button {
+  background-color: white !important;
+  color: #3f3f3f !important;
+  border-color: #ffd2e9 !important;
+  color-scheme: light !important;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+  background-color: white !important;
+  color: #3f3f3f !important;
+  color-scheme: light !important;
+}
+
+/* Выпадающие списки */
+select option {
+  background-color: white !important;
+  color: #3f3f3f !important;
+}
+
+/* Модальные окна и попапы */
+[role="dialog"],
+.modal,
+.popup,
+.dropdown {
+  background-color: white !important;
+  color: #3f3f3f !important;
+  color-scheme: light !important;
+}
+
+/* Карточки и контейнеры */
+.card,
+.container,
+.wrapper,
+[class*="bg-white"],
+[class*="bg-gray"] {
+  background-color: white !important;
+  color: #3f3f3f !important;
+  color-scheme: light !important;
+}
+
+/* Заголовки */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #3f3f3f !important;
+}
+
+/* Ссылки */
+a {
+  color: #EC4899 !important;
+}
+
+/* Таблицы */
+table,
+thead,
+tbody,
+tr,
+td,
+th {
+  background-color: white !important;
+  color: #3f3f3f !important;
+  color-scheme: light !important;
+}
+
+/* Навигация */
+nav,
+.navigation,
+.nav {
+  background-color: white !important;
+  color: #3f3f3f !important;
+  color-scheme: light !important;
+}
+
+/* Футер и хедер */
+header,
+footer {
+  background-color: #fff9fc !important;
+  color: #3f3f3f !important;
+  color-scheme: light !important;
+}
+
+/* Специальные стили для Tailwind классов */
+.bg-white {
+  background-color: white !important;
+}
+
+.bg-gray-50,
+.bg-gray-100 {
+  background-color: #fff9fc !important;
+}
+
+.text-gray-900,
+.text-gray-800,
+.text-gray-700 {
+  color: #3f3f3f !important;
+}
+
+.text-gray-600,
+.text-gray-500 {
+  color: #666666 !important;
+}
+
+/* Браузерные элементы */
+::-webkit-scrollbar {
+  background-color: #f5f5f5 !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #ffd2e9 !important;
+}
+
+/* Для элементов с темным фоном в дизайне */
+.dark-theme-override {
+  background-color: white !important;
+  color: #3f3f3f !important;
+  color-scheme: light !important;
+}
+
+/* Мета-теги для предотвращения темной темы */
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: light !important;
+    background: #fff9fc !important;
+  }
+  
+  body {
+    background: #fff9fc !important;
+    color: #3f3f3f !important;
+  }
+  
+  /* Переопределение всех возможных темных стилей */
+  *:not(.intentionally-dark) {
+    background-color: inherit !important;
+    color: inherit !important;
+    color-scheme: light !important;
+  }
+  
+  /* Принудительная светлая тема для встроенных элементов браузера */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #3f3f3f !important;
   }
 }

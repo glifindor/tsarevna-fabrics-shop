@@ -399,6 +399,34 @@ function ProductsPanel() {
     }
   };
 
+  // Очистка кеша изображений
+  const handleClearCache = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/cache/clear', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('Кеш изображений очищен! Обновите страницу для применения изменений.');
+        // Перезагружаем товары для обновления изображений
+        fetchProducts();
+      } else {
+        alert('Ошибка при очистке кеша: ' + (result.message || 'Неизвестная ошибка'));
+      }
+    } catch (err) {
+      console.error('Ошибка при очистке кеша:', err);
+      alert('Ошибка при очистке кеша изображений');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Добавление тестовых товаров
   const handleAddTestProducts = async () => {
     const testProducts = [
@@ -479,6 +507,13 @@ function ProductsPanel() {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl admin-title mb-5">Управление товарами</h2>
         <div className="flex space-x-2">
+          <button 
+            onClick={handleClearCache} 
+            className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition flex items-center"
+          >
+            <FiSettings className="mr-2" />
+            Очистить кеш изображений
+          </button>
           <button 
             onClick={handleAddTestProducts} 
             className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition flex items-center"
