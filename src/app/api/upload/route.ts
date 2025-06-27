@@ -77,7 +77,8 @@ export async function POST(request: NextRequest) {
     
     // Проверяем, что файл действительно создался
     if (existsSync(filePath)) {
-      console.log('POST /api/upload: Файл успешно создан, размер:', require('fs').statSync(filePath).size);
+      const { statSync } = await import('fs');
+      console.log('POST /api/upload: Файл успешно создан, размер:', statSync(filePath).size);
     } else {
       console.error('POST /api/upload: ОШИБКА - файл не создался!');
     }
@@ -87,8 +88,8 @@ export async function POST(request: NextRequest) {
     
     // Дополнительная проверка - перечислим файлы в папке uploads
     try {
-      const fs = require('fs');
-      const files = fs.readdirSync(uploadsDir);
+      const { readdirSync } = await import('fs');
+      const files = readdirSync(uploadsDir);
       console.log('POST /api/upload: Файлы в uploads после загрузки:', files);
     } catch (e) {
       console.log('POST /api/upload: Ошибка при чтении папки uploads:', e);

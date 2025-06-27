@@ -52,12 +52,12 @@ const checkoutSchema = z.object({
   }
 );
 
-// Отдельная схема для подтверждения с выбором оплаты
-const confirmationSchema = z.object({
-  paymentMethod: z.enum(["card"], {
-    errorMap: () => ({ message: "Выберите способ оплаты" })
-  })
-});
+// Отдельная схема для подтверждения с выбором оплаты (пока не используется)
+// const confirmationSchema = z.object({
+//   paymentMethod: z.enum(["card"], {
+//     errorMap: () => ({ message: "Выберите способ оплаты" })
+//   })
+// });
 
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
 

@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Проверка авторизации - только админы могут очищать кеш
     const session = await getServerSession(authOptions);

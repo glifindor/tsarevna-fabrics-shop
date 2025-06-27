@@ -31,10 +31,10 @@ export async function GET(
       
       // Проверим, что есть в папке uploads
       try {
-        const fs = require('fs');
+        const { readdirSync } = await import('fs');
         const uploadsPath = join(process.cwd(), 'public', 'uploads');
         if (existsSync(uploadsPath)) {
-          const files = fs.readdirSync(uploadsPath);
+          const files = readdirSync(uploadsPath);
           console.log('Файлы в uploads:', files);
         } else {
           console.log('Папка uploads не существует');
