@@ -27,8 +27,10 @@ export async function GET(req: NextRequest) {
     const page = parseInt(url.searchParams.get('page') || '1', 10);
     const limit = parseInt(url.searchParams.get('limit') || '10', 10);
     
-    // Для админов показываем все заказы, для обычных пользователей - только их заказы
-    const filter = session.user.role === 'admin' ? {} : { userId };
+    // Для админов показываем все заказы (кроме удаленных), для обычных пользователей - только их заказы (кроме удаленных)
+    const filter = session.user.role === 'admin' 
+      ? { status: { $ne: 'deleted' } } 
+      : { userId, status: { $ne: 'deleted' } };
     
     // Если запрошена статистика
     if (stats) {

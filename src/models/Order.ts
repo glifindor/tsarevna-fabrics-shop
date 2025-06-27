@@ -16,7 +16,7 @@ export interface IOrder extends Document {
     price: number;
   }[];
   totalAmount: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'canceled';
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'canceled' | 'deleted';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,7 +42,7 @@ const OrderSchema = new Schema<IOrder>(
     totalAmount: { type: Number, required: true },
     status: {
       type: String,
-      enum: ['pending', 'processing', 'shipped', 'delivered', 'canceled'],
+      enum: ['pending', 'processing', 'shipped', 'delivered', 'canceled', 'deleted'],
       default: 'pending',
     },
   },

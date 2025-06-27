@@ -958,6 +958,8 @@ function OrdersPanel() {
         return 'bg-green-100 text-green-800';
       case 'canceled':
         return 'bg-red-100 text-red-800';
+      case 'deleted':
+        return 'bg-gray-100 text-gray-600';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -976,6 +978,8 @@ function OrdersPanel() {
         return 'Доставлен';
       case 'canceled':
         return 'Отменен';
+      case 'deleted':
+        return 'Удален';
       default:
         return status;
     }
@@ -1181,6 +1185,7 @@ function OrdersPanel() {
                       <option value="shipped">Отправлен</option>
                       <option value="delivered">Доставлен</option>
                       <option value="canceled">Отменен</option>
+                      <option value="deleted">🗑️ Удален (не попадает в статистику)</option>
                     </select>
                   </div>
                   <button

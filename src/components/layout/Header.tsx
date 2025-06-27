@@ -5,7 +5,7 @@ import Link from 'next/link';
 // import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
-import { FiMenu, FiX, FiShoppingCart, FiUser, FiSearch } from 'react-icons/fi';
+import { FiMenu, FiX, FiShoppingCart, FiUser } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
 import { useCart } from '@/context/CartContext';
 
@@ -14,7 +14,6 @@ export default function Header() {
   const { totalItems } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const pathname = usePathname();
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -27,13 +26,6 @@ export default function Header() {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      window.location.href = `/catalog?search=${encodeURIComponent(searchQuery)}`;
-    }
   };
 
   useEffect(() => {
@@ -69,26 +61,7 @@ export default function Header() {
             <div className="ml-2 text-xs text-gray-500 italic">волшебные ткани для рукоделия</div>
           </Link>
 
-          {/* Поиск - скрыт на мобильных */}
-          <div className="hidden md:flex items-center mx-4 flex-1 max-w-md">
-            <form onSubmit={handleSearch} className="w-full">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Поиск по названию или артикулу..."
-                  className="w-full py-2 px-4 pr-10 border border-pink-200 rounded-full focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-400"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button
-                  type="submit"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-pink-500 transition-colors"
-                >
-                  <FiSearch size={18} />
-                </button>
-              </div>
-            </form>
-          </div>
+
 
           {/* Десктопная навигация */}
           <nav className="hidden md:flex items-center space-x-8">
@@ -204,25 +177,6 @@ export default function Header() {
         {/* Мобильное меню */}
         {isMenuOpen && (
           <div className="md:hidden mt-4 py-4 border-t border-pink-100">
-            {/* Мобильный поиск */}
-            <form onSubmit={handleSearch} className="mb-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Поиск по названию или артикулу..."
-                  className="w-full py-2 px-4 pr-10 border border-pink-200 rounded-full focus:outline-none focus:ring-2 focus:ring-pink-300"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button
-                  type="submit"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-pink-500"
-                >
-                  <FiSearch size={18} />
-                </button>
-              </div>
-            </form>
-
             {/* Мобильная навигация */}
             <nav className="flex flex-col space-y-4">
               {navLinks.map((link) => (
