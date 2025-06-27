@@ -1,7 +1,10 @@
 'use client';
 import Link from 'next/link';
-import { FiInstagram, FiMail, FiPhone, FiMapPin } from 'react-icons/fi';
+import { FiInstagram, FiPhone, FiMapPin } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa';
+import { FaTelegram } from 'react-icons/fa6';
+import { PiWhatsappLogoFill } from 'react-icons/pi';
+import { SiVk } from 'react-icons/si';
 import { useEffect, useState } from 'react';
 
 export default function Footer() {
@@ -55,13 +58,40 @@ export default function Footer() {
             </p>
             <div className="flex space-x-4">
               <a
-                href="https://instagram.com"
+                href="https://instagram.com/tkani_tsarevnashveyana"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-pink-500 hover:text-pink-600 transition"
                 aria-label="Instagram"
               >
                 <FiInstagram size={20} />
+              </a>
+              <a
+                href="https://vk.com/tsarevnashveyana"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-pink-500 hover:text-pink-600 transition"
+                aria-label="VKontakte"
+              >
+                <SiVk size={20} />
+              </a>
+              <a
+                href="https://t.me/+dm8VfTf-bXw2NWEy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-pink-500 hover:text-pink-600 transition"
+                aria-label="Telegram"
+              >
+                <FaTelegram size={20} />
+              </a>
+              <a
+                href="https://wa.me/79381106565"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-pink-500 hover:text-pink-600 transition"
+                aria-label="WhatsApp"
+              >
+                <PiWhatsappLogoFill size={20} />
               </a>
             </div>
           </div>
@@ -138,20 +168,20 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center space-x-3">
                 <FiPhone className="text-pink-500" />
-                <a href="tel:+78001234567" className="text-gray-600 hover:text-pink-500 transition text-sm">
-                  8 (800) 123-45-67
+                <a href="tel:+79381106565" className="text-gray-600 hover:text-pink-500 transition text-sm">
+                  8-938-110-65-65
                 </a>
               </li>
               <li className="flex items-center space-x-3">
-                <FiMail className="text-pink-500" />
-                <a href="mailto:info@tsarevna-fabrics.ru" className="text-gray-600 hover:text-pink-500 transition text-sm">
-                  info@tsarevna-fabrics.ru
+                <PiWhatsappLogoFill className="text-green-500" />
+                <a href="https://wa.me/79381106565" className="text-gray-600 hover:text-green-500 transition text-sm">
+                  WhatsApp
                 </a>
               </li>
               <li className="flex items-start space-x-3">
                 <FiMapPin className="text-pink-500 mt-1" />
                 <span className="text-gray-600 text-sm">
-                  г. Москва, ул. Текстильщиков, 10, ТЦ &ldquo;Мануфактура&rdquo;
+                  г. Новочеркасск, ул.Московская 7, 2 этаж, ТК &ldquo;Центр&rdquo;
                 </span>
               </li>
             </ul>

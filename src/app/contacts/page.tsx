@@ -2,7 +2,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { FiArrowLeft, FiMapPin, FiPhone, FiMail, FiClock, FiCheck } from 'react-icons/fi';
+import { FiArrowLeft, FiMapPin, FiPhone, FiClock, FiCheck, FiInstagram } from 'react-icons/fi';
+import { FaTelegram } from 'react-icons/fa6';
+import { PiWhatsappLogoFill } from 'react-icons/pi';
+import { SiVk } from 'react-icons/si';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -57,26 +60,31 @@ export default function Contacts() {
                 <FiMapPin className="text-emerald-600 text-xl mt-1 mr-4" />
                 <div>
                   <h3 className="font-bold mb-1">Адрес</h3>
-                  <p className="text-gray-700">г. Москва, ул. Текстильщиков, д. 7, стр. 1</p>
-                  <p className="text-gray-700">Мы находимся в 5 минутах ходьбы от станции метро &ldquo;Текстильщики&rdquo;</p>
+                  <p className="text-gray-700">г. Новочеркасск, ул.Московская 7, 2 этаж, ТК &ldquo;Центр&rdquo;</p>
                 </div>
               </div>
               
               <div className="flex items-start">
                 <FiPhone className="text-emerald-600 text-xl mt-1 mr-4" />
                 <div>
-                  <h3 className="font-bold mb-1">Телефоны</h3>
-                  <p className="text-gray-700">+7 (495) 123-45-67 - отдел продаж</p>
-                  <p className="text-gray-700">+7 (495) 123-45-68 - оптовый отдел</p>
+                  <h3 className="font-bold mb-1">Телефон</h3>
+                  <p className="text-gray-700">
+                    <a href="tel:+79381106565" className="hover:text-emerald-600 transition">
+                      8-938-110-65-65
+                    </a>
+                  </p>
                 </div>
               </div>
               
               <div className="flex items-start">
-                <FiMail className="text-emerald-600 text-xl mt-1 mr-4" />
+                <PiWhatsappLogoFill className="text-green-600 text-xl mt-1 mr-4" />
                 <div>
-                  <h3 className="font-bold mb-1">Email</h3>
-                  <p className="text-gray-700">info@tsarevna-shveyana.ru - общие вопросы</p>
-                  <p className="text-gray-700">sales@tsarevna-shveyana.ru - отдел продаж</p>
+                  <h3 className="font-bold mb-1">WhatsApp</h3>
+                  <p className="text-gray-700">
+                    <a href="https://wa.me/79381106565" className="hover:text-green-600 transition" target="_blank" rel="noopener noreferrer">
+                      8-938-110-65-65
+                    </a>
+                  </p>
                 </div>
               </div>
               
@@ -87,6 +95,33 @@ export default function Contacts() {
                   <p className="text-gray-700">Пн-Пт: с 9:00 до 20:00</p>
                   <p className="text-gray-700">Сб: с 10:00 до 18:00</p>
                   <p className="text-gray-700">Вс: с 10:00 до 17:00</p>
+                </div>
+              </div>
+
+              <div className="flex items-start">
+                <div className="text-emerald-600 text-xl mt-1 mr-4">🌐</div>
+                <div>
+                  <h3 className="font-bold mb-1">Мы в социальных сетях</h3>
+                  <div className="space-y-2">
+                    <p className="text-gray-700">
+                      <a href="https://instagram.com/tkani_tsarevnashveyana" className="hover:text-pink-600 transition inline-flex items-center" target="_blank" rel="noopener noreferrer">
+                        <FiInstagram className="mr-2" />
+                        Instagram: tkani_tsarevnashveyana
+                      </a>
+                    </p>
+                    <p className="text-gray-700">
+                      <a href="https://vk.com/tsarevnashveyana" className="hover:text-blue-600 transition inline-flex items-center" target="_blank" rel="noopener noreferrer">
+                        <SiVk className="mr-2" />
+                        ВКонтакте: tsarevnashveyana
+                      </a>
+                    </p>
+                    <p className="text-gray-700">
+                      <a href="https://t.me/+dm8VfTf-bXw2NWEy" className="hover:text-blue-500 transition inline-flex items-center" target="_blank" rel="noopener noreferrer">
+                        <FaTelegram className="mr-2" />
+                        Telegram канал
+                      </a>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

@@ -33,9 +33,9 @@ export default function ReturnPolicy() {
         <li>После получения и проверки товара продавец осуществляет возврат денежных средств.</li>
       </ul>
       <h2 className="text-xl font-semibold mt-8 mb-2">6. Контакты для возврата</h2>
-      <p>
-        По вопросам возврата обращайтесь по телефону <a href="tel:+78001234567" className="text-pink-500 hover:underline">8 (800) 123-45-67</a> или email <a href="mailto:info@tsarevna-fabrics.ru" className="text-pink-500 hover:underline">info@tsarevna-fabrics.ru</a>.
-      </p>
+              <p>
+          По вопросам возврата обращайтесь по телефону <a href="tel:+79381106565" className="text-pink-500 hover:underline">8-938-110-65-65</a> или в WhatsApp <a href="https://wa.me/79381106565" className="text-green-500 hover:underline" target="_blank" rel="noopener noreferrer">8-938-110-65-65</a>.
+        </p>
       <p className="mt-8 text-gray-500 text-sm">Последнее обновление: {new Date().toLocaleDateString('ru-RU')}</p>
     </div>
   );

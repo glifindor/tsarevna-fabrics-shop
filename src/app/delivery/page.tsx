@@ -18,8 +18,8 @@ export default function DeliveryPage() {
                 Забрать заказ можно в нашем магазине по адресу:
               </p>
               <address className="text-gray-700 not-italic">
-                г. Москва, ул. Текстильщиков, 10<br />
-                ТЦ "Мануфактура"
+                г. Новочеркасск, ул.Московская 7, 2 этаж<br />
+                ТК "Центр"
               </address>
               <p className="text-green-600 font-medium mt-3">Бесплатно</p>
             </div>
@@ -83,16 +83,18 @@ export default function DeliveryPage() {
             </p>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
               <a 
-                href="tel:+78001234567" 
+                href="tel:+79381106565" 
                 className="text-pink-600 hover:text-pink-700 font-medium"
               >
-                📞 8 (800) 123-45-67
+                📞 8-938-110-65-65
               </a>
               <a 
-                href="mailto:info@tsarevna-fabrics.ru" 
-                className="text-pink-600 hover:text-pink-700 font-medium"
+                href="https://wa.me/79381106565" 
+                className="text-green-600 hover:text-green-700 font-medium"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                ✉️ info@tsarevna-fabrics.ru
+                💬 WhatsApp
               </a>
             </div>
           </div>
