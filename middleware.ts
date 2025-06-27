@@ -3,9 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Обработка статических файлов в /uploads/
+  // Пропускаем статические файлы uploads напрямую к файловой системе
   if (pathname.startsWith('/uploads/')) {
-    // Разрешаем прямой доступ к статическим файлам
     return NextResponse.next();
   }
 
@@ -18,10 +17,11 @@ export const config = {
     /*
      * Match all request paths except for the ones starting with:
      * - api (API routes)
-     * - _next/static (static files)
+     * - _next/static (static files)  
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - uploads (статические изображения)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|uploads).*)',
   ],
 }; 

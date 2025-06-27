@@ -57,4 +57,39 @@ export function getFirstImage(images?: string[] | null, fallback: string = '/ver
   }
 
   return getImageUrl(firstImage, fallback);
+}
+
+/**
+ * Fallback URL для API route (если статические файлы не работают)
+ * @param imageUrl - URL изображения
+ * @param fallback - запасное изображение
+ * @returns - URL через API route
+ */
+export function getFallbackImageUrl(imageUrl?: string | null, fallback: string = '/vercel.svg'): string {
+  if (!imageUrl || typeof imageUrl !== 'string' || imageUrl.trim() === '') {
+    return fallback;
+  }
+
+  const trimmed = imageUrl.trim();
+
+  // Если это внешний URL, возвращаем как есть
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+
+  // Если это fallback изображение, возвращаем как есть
+  if (trimmed === fallback || trimmed.startsWith('/vercel.') || trimmed.startsWith('/logo.')) {
+    return trimmed;
+  }
+
+  // Очищаем путь от лишних слешей и префикса uploads/
+  const cleanPath = trimmed.replace(/^\/+/, '').replace(/^uploads\//, '');
+  
+  // Если после очистки ничего не осталось, возвращаем fallback
+  if (!cleanPath) {
+    return fallback;
+  }
+  
+  // Возвращаем URL через API route
+  return `/api/static/${cleanPath}`;
 } 

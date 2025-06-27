@@ -21,17 +21,7 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
   },
   
-  // Настройка статических файлов
-  async rewrites() {
-    return [
-      {
-        source: '/uploads/:path*',
-        destination: '/uploads/:path*',
-      },
-    ];
-  },
-  
-  // Настройка заголовков для кеширования
+  // Настройка заголовков для статических файлов
   async headers() {
     return [
       {
@@ -39,11 +29,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-          {
-            key: 'Content-Type',
-            value: 'image/*',
+            value: 'public, max-age=3600', // Кэш на 1 час
           },
         ],
       },
