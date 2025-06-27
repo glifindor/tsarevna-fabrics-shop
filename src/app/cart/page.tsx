@@ -20,10 +20,11 @@ export default function Cart() {
     
     if (!item) return;
     
-    // Проверка на наличие и минимальное значение
-    if (newQuantity < 1 || (item.stock && newQuantity > item.stock)) return;
+    // Проверка на наличие и минимальное значение (кратность 0.1м)
+    const roundedQuantity = Math.round(newQuantity * 10) / 10;
+    if (roundedQuantity < 0.1 || (item.stock && roundedQuantity > item.stock)) return;
     
-    updateItem(productId, newQuantity);
+    updateItem(productId, roundedQuantity);
   };
 
   // Удаление товара из корзины
@@ -129,7 +130,7 @@ export default function Cart() {
                               ) : (
                                 <span className="text-base lg:text-lg font-medium block truncate">{item.name || `Товар #${item.productId}`}</span>
                               )}
-                              <p className="text-gray-600 text-sm lg:text-base">Цена: {item.price} ₽/м</p>
+                              <p className="text-gray-600 text-sm lg:text-base">Цена: {Math.round((item.price || 0) / 10)} ₽/10см ({item.price || 0} ₽/м)</p>
                             </div>
                             <div className="mt-2 sm:mt-0 text-left sm:text-right flex-shrink-0">
                               <p className="product-price text-base lg:text-lg">
@@ -142,28 +143,18 @@ export default function Cart() {
                           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">
                             <div className="flex items-center">
                               <button
-                                onClick={() => handleUpdateQuantity(item.productId, item.quantity - 1)}
+                                onClick={() => handleUpdateQuantity(item.productId, item.quantity - 0.1)}
                                 className="flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-l border border-pink-200 bg-pink-50 text-gray-600 hover:bg-pink-100 transition touch-target"
-                                disabled={item.quantity <= 1 || isLoading}
+                                disabled={item.quantity <= 0.1 || isLoading}
                               >
                                 <FiMinus size={16} />
                               </button>
-                              <input
-                                type="number"
-                                className="w-16 h-10 sm:w-12 sm:h-8 border-y border-pink-200 text-center text-gray-700 focus:outline-none form-input"
-                                value={item.quantity}
-                                min="1"
-                                max={item.stock}
-                                onChange={(e) => {
-                                  const val = parseInt(e.target.value);
-                                  if (!isNaN(val)) {
-                                    handleUpdateQuantity(item.productId, val);
-                                  }
-                                }}
-                                disabled={isLoading}
-                              />
+                              <div className="w-20 h-10 sm:w-16 sm:h-8 border-y border-pink-200 text-center text-gray-700 flex flex-col justify-center text-xs">
+                                <div>{item.quantity}м</div>
+                                <div className="text-gray-500">({Math.round(item.quantity * 100)}см)</div>
+                              </div>
                               <button
-                                onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1)}
+                                onClick={() => handleUpdateQuantity(item.productId, item.quantity + 0.1)}
                                 className="flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-r border border-pink-200 bg-pink-50 text-gray-600 hover:bg-pink-100 transition touch-target"
                                 disabled={(item.stock !== undefined && item.quantity >= item.stock) || isLoading}
                               >

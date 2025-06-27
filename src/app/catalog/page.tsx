@@ -185,7 +185,7 @@ const CatalogContent: React.FC = () => {
   const handleAddToCart = async (product: Product) => {
     try {
       setAddingToCart(product._id);
-      await addItem(product._id, 1);
+      await addItem(product._id, 0.1); // Добавляем 10см
       setAddingToCart(null);
       
       // Показываем уведомление об успешном добавлении
@@ -487,7 +487,7 @@ const CatalogContent: React.FC = () => {
                       </div>
                       <p className="text-sm text-gray-600 mb-2">{product.composition}</p>
                       <div className="flex justify-between items-center">
-                        <p className="product-price">{product.price} ₽/м</p>
+                        <p className="product-price">{Math.round(product.price / 10)} ₽/10см</p>
                         <span className={`text-sm ${product.stock > 0 ? 'text-pink-600' : 'text-red-600'}`}>
                           {product.stock > 0 ? 'В наличии' : 'Нет в наличии'}
                         </span>

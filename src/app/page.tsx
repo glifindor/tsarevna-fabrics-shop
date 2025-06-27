@@ -242,7 +242,7 @@ export default function Home() {
                   </div>
                   <div className="p-3 md:p-4">
                     <h3 className="font-medium mb-2 hover:text-pink-600 transition text-sm md:text-base line-clamp-2">{product.name}</h3>
-                    <p className="product-price text-sm md:text-base">{product.price} ₽/м</p>
+                    <p className="product-price text-sm md:text-base">{Math.round(product.price / 10)} ₽/10см</p>
                   </div>
                 </Link>
               </div>

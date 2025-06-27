@@ -53,7 +53,7 @@ export default function ProductPage() {
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(0.1); // Начинаем с 10см
   const [selectedImage, setSelectedImage] = useState(0);
 
   const [notification, setNotification] = useState<{
@@ -141,14 +141,14 @@ export default function ProductPage() {
   }, []);
 
   const decreaseQuantity = () => {
-    if (quantity > 1) {
-      setQuantity(quantity - 1);
+    if (quantity > 0.1) {
+      setQuantity(Math.round((quantity - 0.1) * 10) / 10); // Уменьшаем на 10см с округлением
     }
   };
 
   const increaseQuantity = () => {
     if (product && quantity < product.stock) {
-      setQuantity(quantity + 1);
+      setQuantity(Math.round((quantity + 0.1) * 10) / 10); // Увеличиваем на 10см с округлением
     }
   };
     const addToCart = async () => {
@@ -174,7 +174,7 @@ export default function ProductPage() {
       // Показываем уведомление об успешном добавлении
       setNotification({
         show: true,
-        message: `Товар "${product.name}" (${quantity} м) добавлен в корзину!`,
+        message: `Товар "${product.name}" (${quantity}м) добавлен в корзину!`,
         type: 'success'
       });
       
@@ -201,7 +201,7 @@ export default function ProductPage() {
       // Предпочтительно используем артикул товара для поиска в БД
       const productIdentifier = product.articleNumber || product._id;
       
-      await addItem(productIdentifier, 1);
+      await addItem(productIdentifier, 0.1); // Добавляем 10см
       
       setNotification({
         show: true,
@@ -342,7 +342,8 @@ export default function ProductPage() {
           <p className="text-gray-500 mb-4">Артикул: {product.articleNumber}</p>
           
           <div className="text-2xl font-bold text-pink-600 mb-6">
-            {product.price} ₽/м
+            {Math.round(product.price / 10)} ₽/10см
+            <span className="text-sm text-gray-500 block">({product.price} ₽/м)</span>
           </div>
 
           <div className="mb-6 decorated-container p-4">
@@ -373,25 +374,26 @@ export default function ProductPage() {
           {/* Количество и добавление в корзину */}
           {product.stock > 0 ? (
             <div className="mb-6">
-              <h2 className="font-semibold mb-3 text-pink-600">Количество (м)</h2>
+              <h2 className="font-semibold mb-3 text-pink-600">Количество</h2>
               <div className="flex items-center">
                 <button
                   onClick={decreaseQuantity}
                   className="flex items-center justify-center w-10 h-10 rounded-l border border-pink-200 bg-pink-50 text-gray-600 hover:bg-pink-100 transition"
-                  disabled={quantity <= 1}
+                  disabled={quantity <= 0.1}
                 >
                   <FiMinus />
                 </button>
                 <input
                   type="number"
-                  className="w-16 h-10 border-y border-pink-200 text-center text-gray-700 focus:outline-none"
-                  value={quantity}
-                  min="1"
+                  step="0.1"
+                  className="w-20 h-10 border-y border-pink-200 text-center text-gray-700 focus:outline-none"
+                  value={quantity.toFixed(1)}
+                  min="0.1"
                   max={product.stock}
                   onChange={(e) => {
-                    const val = parseInt(e.target.value);
-                    if (!isNaN(val) && val >= 1 && val <= product.stock) {
-                      setQuantity(val);
+                    const val = parseFloat(e.target.value);
+                    if (!isNaN(val) && val >= 0.1 && val <= product.stock) {
+                      setQuantity(Math.round(val * 10) / 10); // Округляем до 0.1
                     }
                   }}
                 />
@@ -402,9 +404,10 @@ export default function ProductPage() {
                 >
                   <FiPlus />
                 </button>
-                <span className="ml-4 text-gray-700 font-medium">
-                  Сумма: {(product.price * quantity).toLocaleString()} ₽
-                </span>
+                <div className="ml-4 text-gray-700">
+                  <div className="font-medium">{quantity}м ({Math.round(quantity * 100)}см)</div>
+                  <div className="text-sm">Сумма: {(product.price * quantity).toLocaleString()} ₽</div>
+                </div>
               </div>
             </div>
           ) : (
@@ -465,7 +468,7 @@ export default function ProductPage() {
                     )}
                   </div>                  <div className="p-4">
                     <h3 className="font-medium mb-2 hover:text-pink-600 transition">{product.name}</h3>
-                    <p className="product-price mb-2">{product.price} ₽/м</p>
+                    <p className="product-price mb-2">{Math.round(product.price / 10)} ₽/10см</p>
                     <button 
                       className="w-full btn-secondary py-1 px-2 rounded flex items-center justify-center gap-1 text-sm"
                       onClick={(e) => {
